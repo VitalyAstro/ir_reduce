@@ -1,0 +1,2 @@
+OBSGEO-Y=        -1719170.4876 / Cartesian Coordinate Y                         
+OBSGEO-Z=          3051490.766 / Cartesian Coordinate Z                         
