@@ -124,4 +124,7 @@ if __name__ == '__main__':
     wcs = skyscaled[0].wcs
     reprojected = [ccdproc.wcs_project(img, wcs) for img in skyscaled]
     output = ccdproc.Combiner(reprojected).median_combine()
-    output.write('pythonTestOut.fits')
+    try:
+        output.write('pythonTestOut.fits')
+    except OSError as err:
+        print(err.message, "ignoring")
