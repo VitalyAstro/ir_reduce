@@ -8,8 +8,12 @@ from astropy.io import fits
 
 from functools import reduce
 
-from typing import List, Tuple, Iterable, Set, Union, Any
+from typing import List, Tuple, Iterable, Set, Union, Any, Dict
 from numpy import s_
+
+def find_files(directory: str) -> Dict[str,str]:
+    pass
+
 
 image_paths = [
     'NCAc070865.fits',
@@ -50,7 +54,8 @@ bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads
 
 filter_vals = ('H', 'J', 'Ks')
 filter_column = 'NCFLTNM2'
-
+#'IMCAT'
+#'OBJECT'
 
 def standard_process():
     processed = dict()
