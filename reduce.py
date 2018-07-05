@@ -6,6 +6,8 @@ import ccdproc
 from astropy.stats import SigmaClip
 from astropy.io import fits
 
+from functools import reduce
+
 from typing import List, Tuple, Iterable, Set, Union, Any
 from numpy import s_
 
@@ -39,11 +41,12 @@ image_paths = [
     'NCAc070891.fits'
 ]
 flat_paths = ['FlatK.fits', 'FlatJ.fits', 'FlatH.fits']
-bad_paths = ['bad_zero_sci.fits']
+bad_paths = ['bad_cold5.fits', 'bad_zero_sci.fits', 'bad_hot2.fits']
 
 images = [astropy.nddata.CCDData.read(image) for image in image_paths]
 flats = [astropy.nddata.CCDData.read(image) for image in flat_paths]
-bad = astropy.nddata.CCDData.read(bad_paths[0])
+bads = [astropy.nddata.CCDData.read(image) for image in bad_paths]
+bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads)) #combine bad pixel masks
 
 filter_vals = ('H', 'J', 'Ks')
 filter_column = 'NCFLTNM2'
@@ -57,7 +60,7 @@ def standard_process():
 
         reduceds = []
         for image in images_with_filter:
-            image.mask = bad.data
+            image.mask = bad
             # TODO that's from the quicklook-package, probably would want to do this individually for every sensor area
             gain = (image.header['GAIN1'] + image.header['GAIN2'] + image.header['GAIN3'] + image.header['GAIN4']) / 4
             readnoise = (image.header['RDNOISE1'] + image.header['RDNOISE2'] + image.header['RDNOISE3'] + image.header[
@@ -70,7 +73,7 @@ def standard_process():
                                           readnoise=readnoise * u.electron,
                                           dark_frame=None,
                                           master_flat=flat,
-                                          bad_pixel_mask=bad.data)
+                                          bad_pixel_mask=bad)
             reduceds.append(reduced)
         processed[filter_val] = reduceds
     return processed
