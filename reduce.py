@@ -112,9 +112,10 @@ def interpolate(img: CCDData):
     from astropy.convolution import Gaussian2DKernel
     from astropy.convolution import interpolate_replace_nans
     kernel = Gaussian2DKernel(1)  # TODO this should be a 9x9 bilinear interpolation
-    for img in images:
-        img.data[img.mask] = np.NaN
-        img.data = interpolate_replace_nans(img.data, kernel)
+
+    img.data[img.mask] = np.NaN
+    img.data = interpolate_replace_nans(img.data, kernel)
+
     return img
 
 
@@ -127,4 +128,4 @@ if __name__ == '__main__':
     try:
         output.write('pythonTestOut.fits')
     except OSError as err:
-        print(err.message, "ignoring")
+        print(err, "...ignoring")
