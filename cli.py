@@ -1,8 +1,9 @@
 import argparse
 import os
 # import reduce
-from typing import Iterable
+from typing import Iterable, Any
 
+VERSION='0.1'
 
 def call_reduce(bads: Iterable[str],
                 flats: Iterable[str],
@@ -21,6 +22,8 @@ def do_discover(args: argparse.Namespace):
     bads, flats, images = imageDiscovery.discover(args.folder)
     return call_reduce(bads, flats, images, args)
 
+def do_nothing(args: Any) -> None:
+    pass
 
 parser = argparse.ArgumentParser(description='Reduction toolchain')
 
@@ -33,6 +36,9 @@ parser.add_argument('-r', '--register-images', action='store_true',
 parser.add_argument('--force', '--javascript', action='store_true',
                     help='Non fatal errors and validation is ignored. https://www.destroyallsoftware.com/talks/wat')
 parser.add_argument('--verbose', '-v', action='count')
+parser.add_argument('--version', action='version', version=VERSION)
+
+parser.set_defaults(func=do_nothing)
 
 subparsers = parser.add_subparsers(help='sub commands')
 
@@ -51,7 +57,6 @@ sub_parser.add_argument('folder', nargs='?', type=str, default=os.getcwd(),
 sub_parser.add_argument('-c', '--confirm', help='Confirm file selection')
 sub_parser.set_defaults(func=do_discover)
 
-parser.add_argument('--version', action='version', version='0.1')
 
 args = parser.parse_args()
 print(args)
