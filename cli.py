@@ -29,6 +29,9 @@ group.add_argument('-m', '--median', action='store_true', help='combine images u
 group.add_argument('-a', '--average', action='store_true', help='combine images using average')
 parser.add_argument('-r', '--register-images', action='store_true',
                     help='images are aligned with cross correlation, not just based on WCS')
+# Not sure if the next one is a good idea...
+parser.add_argument('--force', '--javascript', action='store_true',
+                    help='Non fatal errors and validation is ignored. https://www.destroyallsoftware.com/talks/wat')
 parser.add_argument('--verbose', '-v', action='count')
 
 subparsers = parser.add_subparsers(help='sub commands')

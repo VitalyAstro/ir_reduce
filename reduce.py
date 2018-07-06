@@ -1,18 +1,61 @@
+"""
+Module for reducing infrared Data, currently for NOTCam but intended for a future instrument
+"""
 import numpy as np
 import astropy
+import os
+import itertools
 from astropy import units as u
 from astropy.nddata import CCDData
 import ccdproc
 from astropy.stats import SigmaClip
 from astropy.io import fits
+from imageDiscovery import Paths
 
-from functools import reduce
+from functools import reduce # meh, maybe rename this file...
 
 from typing import List, Tuple, Iterable, Set, Union, Any, Dict
-from numpy import s_
+from numpy import s_ # numpy helper to create slices by indexing this
 
-def find_files(directory: str) -> Dict[str,str]:
-    pass
+# Globals: Fits-columns #todo: put in module
+filter_column = 'NCFLTNM2' # TODO NOTCam-specific
+filter_vals = ('H', 'J', 'Ks')
+
+image_category = 'IMAGECAT'
+object_ID = 'OBJECT'
+
+def read_and_sort(bads: str, flats: str, exposures: str) -> Dict[str,Paths]:
+    """
+
+    :param bads:
+    :param flats:
+    :param exposures:
+    :return:
+    """
+    # TODO move asserts into unit-test or introduce a validation flag/wrapper
+    assert(all(os.path.isfile(path) for path in itertools.chain(bads, flats, exposures)))
+
+    image_datas = [astropy.nddata.CCDData.read(image) for image in exposures]
+    flat_datas = [astropy.nddata.CCDData.read(image) for image in flats]
+    bad_datas = [astropy.nddata.CCDData.read(image) for image in bads]
+
+    ret = dict()
+    # for all filter present in science data we need at least a flatImage and a bad pixel image
+    for filter_id in filter_vals:
+        try:
+            images_with_filter = [image for image in image_datas if image.header[filter_column] == filter_id]
+            # only science images allowed
+            assert(all((image.header[image_category] == 'SCIENCE' for image in images_with_filter)))
+
+            flats_with_filter = [image for image in flat_datas if image.header[filter_column] == filter_id]
+        except KeyError as err:
+            print("looks like there's no filter column in the fits data")
+            raise err
+
+        # bad pixel maps are valid, no matter the filter
+        ret[filter_id] = Paths(bad_datas, flats_with_filter, images_with_filter)
+
+    return ret
 
 
 image_paths = [
@@ -52,11 +95,7 @@ flats = [astropy.nddata.CCDData.read(image) for image in flat_paths]
 bads = [astropy.nddata.CCDData.read(image) for image in bad_paths]
 bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads)) #combine bad pixel masks
 
-filter_vals = ('H', 'J', 'Ks')
-filter_column = 'NCFLTNM2'
-#'IMCAT'
-#'OBJECT'
-
+# TODO standard_process(bads,flats,images) -> List[CCDData]
 def standard_process():
     processed = dict()
     for idx, filter_val in enumerate(filter_vals):
