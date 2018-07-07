@@ -12,19 +12,20 @@ from astropy.stats import SigmaClip
 from astropy.io import fits
 from imageDiscovery import Paths
 
-from functools import reduce # meh, maybe rename this file...
+from functools import reduce  # meh, maybe rename this file...
 
 from typing import List, Tuple, Iterable, Set, Union, Any, Dict
-from numpy import s_ # numpy helper to create slices by indexing this
+from numpy import s_  # numpy helper to create slices by indexing this
 
 # Globals: Fits-columns #todo: put in module
-filter_column = 'NCFLTNM2' # TODO NOTCam-specific
+filter_column = 'NCFLTNM2'  # TODO NOTCam-specific
 filter_vals = ('H', 'J', 'Ks')
 
 image_category = 'IMAGECAT'
 object_ID = 'OBJECT'
 
-def read_and_sort(bads: str, flats: str, exposures: str) -> Dict[str,Paths]:
+
+def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable[str]) -> Dict[str, Paths]:
     """
 
     :param bads:
@@ -33,7 +34,7 @@ def read_and_sort(bads: str, flats: str, exposures: str) -> Dict[str,Paths]:
     :return:
     """
     # TODO move asserts into unit-test or introduce a validation flag/wrapper
-    assert(all(os.path.isfile(path) for path in itertools.chain(bads, flats, exposures)))
+    assert (all(os.path.isfile(path) for path in itertools.chain(bads, flats, exposures)))
 
     image_datas = [astropy.nddata.CCDData.read(image) for image in exposures]
     flat_datas = [astropy.nddata.CCDData.read(image) for image in flats]
@@ -45,9 +46,10 @@ def read_and_sort(bads: str, flats: str, exposures: str) -> Dict[str,Paths]:
         try:
             images_with_filter = [image for image in image_datas if image.header[filter_column] == filter_id]
             # only science images allowed
-            assert(all((image.header[image_category] == 'SCIENCE' for image in images_with_filter)))
+            assert (all((image.header[image_category] == 'SCIENCE' for image in images_with_filter)))
 
             flats_with_filter = [image for image in flat_datas if image.header[filter_column] == filter_id]
+            assert (len(flats_with_filter) == 1)  # TODO only one flat
         except KeyError as err:
             print("looks like there's no filter column in the fits data")
             raise err
@@ -58,6 +60,78 @@ def read_and_sort(bads: str, flats: str, exposures: str) -> Dict[str,Paths]:
     return ret
 
 
+# TODO standard_process(bads,flats,images) -> List[CCDData]
+def standard_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) -> List[CCDData]:
+    bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads))  # combine bad pixel masks
+
+    reduceds = []
+    for image in images:
+        image.mask = bad
+        # TODO that's from the quicklook-package, probably would want to do this individually for every sensor area
+        gain = (image.header['GAIN1'] + image.header['GAIN2'] + image.header['GAIN3'] + image.header['GAIN4']) / 4
+        readnoise = (image.header['RDNOISE1'] + image.header['RDNOISE2'] + image.header['RDNOISE3'] + image.header[
+            'RDNOISE4']) / 4
+        reduced = ccdproc.ccd_process(image,
+                                      oscan=None,
+                                      error=True,
+                                      gain=gain * u.electron / u.count,
+                                      # TODO check if this is right or counts->adu required
+                                      readnoise=readnoise * u.electron,
+                                      dark_frame=None,
+                                      master_flat=flat,
+                                      bad_pixel_mask=bad)
+        reduceds.append(reduced)
+    return reduceds
+
+
+def skyscale(image_list: Iterable[CCDData], method: str = 'subtract',
+             cut: Tuple[Union[slice, int]] = s_[200:800, 200:800]) -> List[CCDData]:
+    """
+    Subtract/divide out the median sky value of some images
+    :param image_list: The images to process
+    :param method: either 'subtract' or 'divide'
+    :param cut: what region of the images to consider to create the median sky value
+    :return: images, with sky removed
+    """
+    sigma_clip = SigmaClip(sigma=3., iters=3)
+    filtered_data = [sigma_clip(image.data) for image in image_list]
+
+    medians = np.array([np.median(data[cut]) for data in filtered_data])
+    airmass = sum((image.header['AIRMASS'] for image in image_list))  # TODO needed?
+
+    # TODO from original code:
+    # Calculate scaling relatively to last image median
+    # Why not average or median-median?
+    if method == 'subtract':
+        medians = medians - medians[-1]
+        ret = [CCDData.subtract(image, median * u.electron) for image, median in zip(image_list, medians)]
+    elif method == 'divide':
+        medians = medians / medians[-1]
+        ret = [CCDData.subtract(image, median) for image, median in zip(image_list, medians)]
+    else:
+        raise ValueError('method needs to be either subtract or divide')
+
+    # TODO: write/return sky file?
+    return ret
+
+
+def interpolate(img: CCDData):
+    # TODO combiner does not care about this and marks it invalid still
+    from astropy.convolution import Gaussian2DKernel
+    from astropy.convolution import interpolate_replace_nans
+    kernel = Gaussian2DKernel(1)  # TODO this should be a 9x9 bilinear interpolation
+
+    img.data[img.mask] = np.NaN
+    img.data = interpolate_replace_nans(img.data, kernel)
+
+    return img
+
+
+def do_everything(*args, **kwargs):
+    pass
+
+
+# todo move everything below to testcase
 image_paths = [
     'NCAc070865.fits',
     'NCAc070866.fits',
@@ -90,85 +164,16 @@ image_paths = [
 flat_paths = ['FlatK.fits', 'FlatJ.fits', 'FlatH.fits']
 bad_paths = ['bad_cold5.fits', 'bad_zero_sci.fits', 'bad_hot2.fits']
 
-images = [astropy.nddata.CCDData.read(image) for image in image_paths]
-flats = [astropy.nddata.CCDData.read(image) for image in flat_paths]
-bads = [astropy.nddata.CCDData.read(image) for image in bad_paths]
-bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads)) #combine bad pixel masks
-
-# TODO standard_process(bads,flats,images) -> List[CCDData]
-def standard_process():
-    processed = dict()
-    for idx, filter_val in enumerate(filter_vals):
-        images_with_filter = [image for image in images if image.header[filter_column] == filter_val]
-        flat = flats[idx]
-
-        reduceds = []
-        for image in images_with_filter:
-            image.mask = bad
-            # TODO that's from the quicklook-package, probably would want to do this individually for every sensor area
-            gain = (image.header['GAIN1'] + image.header['GAIN2'] + image.header['GAIN3'] + image.header['GAIN4']) / 4
-            readnoise = (image.header['RDNOISE1'] + image.header['RDNOISE2'] + image.header['RDNOISE3'] + image.header[
-                'RDNOISE4']) / 4
-            reduced = ccdproc.ccd_process(image,
-                                          oscan=None,
-                                          error=True,
-                                          gain=gain * u.electron / u.count,
-                                          # TODO check if this is right or counts->adu required
-                                          readnoise=readnoise * u.electron,
-                                          dark_frame=None,
-                                          master_flat=flat,
-                                          bad_pixel_mask=bad)
-            reduceds.append(reduced)
-        processed[filter_val] = reduceds
-    return processed
-
-
-def skyscale(image_list: Iterable[CCDData], method: str = 'subtract',
-             cut: Tuple[Union[slice, int]] = s_[200:800, 200:800]) -> List[CCDData]:
-    """
-    Subtract/divide out the median sky value of some images
-    :param image_list: The images to process
-    :param method: either 'subtract' or 'divide'
-    :param cut: what region of the images to consider to create the median sky value
-    :return: images, with sky removed
-    """
-    sigma_clip = SigmaClip(sigma=3., iters=3)
-    filtered_data = [sigma_clip(image.data) for image in image_list]
-
-    medians = np.array([np.median(data[cut]) for data in filtered_data])
-    airmass = sum((image.header['AIRMASS'] for image in image_list))  # TODO needed?
-
-    # TODO from original code:
-    # Calculate scaling relatively to last image median
-    # Why not average or median-median?
-    if method == 'subtract':
-        medians = medians - medians[-1]
-        ret = [CCDData.subtract(image, median*u.electron) for image, median in zip(image_list, medians)]
-    elif method == 'divide':
-        medians = medians / medians[-1]
-        ret = [CCDData.subtract(image, median) for image, median in zip(image_list, medians)]
-    else:
-        raise ValueError('method needs to be either subtract or divide')
-
-    # TODO: write/return sky file?
-    return ret
-
-
-def interpolate(img: CCDData):
-    # TODO combiner does not care about this and marks it invalid still
-    from astropy.convolution import Gaussian2DKernel
-    from astropy.convolution import interpolate_replace_nans
-    kernel = Gaussian2DKernel(1)  # TODO this should be a 9x9 bilinear interpolation
-
-    img.data[img.mask] = np.NaN
-    img.data = interpolate_replace_nans(img.data, kernel)
-
-    return img
-
-
 if __name__ == '__main__':
-    processed = standard_process()
-    skyscaled = skyscale(processed['J'], 'subtract')
+    images = [astropy.nddata.CCDData.read(image) for image in image_paths]
+    flats = [astropy.nddata.CCDData.read(image) for image in flat_paths]
+    bads = [astropy.nddata.CCDData.read(image) for image in bad_paths]
+    bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads))  # combine bad pixel masks
+
+    read_files = read_and_sort(bad_paths, flat_paths, image_paths)
+
+    processed = standard_process(read_files['J'].bad, read_files['J'].flat[0], read_files['J'].images)
+    skyscaled = skyscale(processed, 'subtract')
     wcs = skyscaled[0].wcs
     reprojected = [ccdproc.wcs_project(img, wcs) for img in skyscaled]
     output = ccdproc.Combiner(reprojected).median_combine()
