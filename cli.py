@@ -16,15 +16,17 @@ def call_reduce(bads: Iterable[str],
                 images: Iterable[str],
                 flags: argparse.Namespace) -> None:
     reduce.do_everything(bads, flats, images,
+                         output=flags.output,
+                         filter=flags.filter,
                          combine='average' if flags.average else 'median',
-                         skyscale='subtract' if flags.subtract else 'divide',
+                         skyscale_method='subtract' if flags.subtract else 'divide',
                          register=flags.register_images,
                          verbosity=flags.verbose,
                          force=flags.force)
 
 
 def do_manual(args: argparse.Namespace):
-    return call_reduce(args.bads, args.flats, args.images, args)
+    return call_reduce(args.bad, args.flat, args.exposures, args)
 
 
 def do_discover(args: argparse.Namespace):
@@ -57,11 +59,15 @@ group = parser.add_mutually_exclusive_group()
 group.add_argument('-s', '--subtract', action='store_true', help='skyscale images by subtraction')
 group.add_argument('-d', '--divide', action='store_true', help='skyscale images by division')
 parser.add_argument('-r', '--register-images', action='store_true',
-                    help='images are aligned with cross correlation, not just based on WCS')
+                    help='[not implemented] images are aligned with cross correlation, not just based on WCS')
+parser.add_argument('--filter', '-fl', nargs=1, default='J', help='What image filter do we want to process?')
 
 # Not sure if the next one is a good idea...
 parser.add_argument('--force', '--javascript', action='store_true',
-                    help='Non fatal errors and validation is ignored. https://www.destroyallsoftware.com/talks/wat')
+                    help='[not implemented] Non fatal errors and validation are ignored. https://www.destroyallsoftware.com/talks/wat')
+parser.add_argument('output', nargs='?', type=str, default='reduced.fits',
+                        help='output file to write to, default: reduced.fits')
+
 parser.add_argument('--verbose', '-v', action='count', default=0)
 parser.add_argument('--version', action='version', version=VERSION)
 

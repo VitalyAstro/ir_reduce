@@ -12,7 +12,7 @@ from astropy.stats import SigmaClip
 from astropy.io import fits
 from imageDiscovery import Paths
 
-from functools import reduce  # meh, maybe rename this file...
+from functools import reduce  # TODO meh, maybe rename this file then...
 
 from typing import List, Tuple, Iterable, Set, Union, Any, Dict
 from numpy import s_  # numpy helper to create slices by indexing this
@@ -49,7 +49,8 @@ def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable
             assert (all((image.header[image_category] == 'SCIENCE' for image in images_with_filter)))
 
             flats_with_filter = [image for image in flat_datas if image.header[filter_column] == filter_id]
-            assert (len(flats_with_filter) == 1)  # TODO only one flat
+            #assert (len(flats_with_filter) == 1)  # TODO only one flat
+            # TODO this assumes that you pass all possible flats. But CLI only wants one flat right now
         except KeyError as err:
             print("looks like there's no filter column in the fits data")
             raise err
@@ -103,11 +104,11 @@ def skyscale(image_list: Iterable[CCDData], method: str = 'subtract',
     # Calculate scaling relatively to last image median
     # Why not average or median-median?
     if method == 'subtract':
-        medians = medians - medians[-1]
+        medians = (medians - medians[-1])
         ret = [CCDData.subtract(image, median * u.electron) for image, median in zip(image_list, medians)]
     elif method == 'divide':
         medians = medians / medians[-1]
-        ret = [CCDData.subtract(image, median) for image, median in zip(image_list, medians)]
+        ret = [CCDData.subtract(image, median * u.electron) for image, median in zip(image_list, medians)]
     else:
         raise ValueError('method needs to be either subtract or divide')
 
@@ -127,8 +128,32 @@ def interpolate(img: CCDData):
     return img
 
 
-def do_everything(*args, **kwargs):
-    pass
+def do_everything(bads: Iterable[str],
+                  flats: Iterable[str],
+                  images: Iterable[str],
+                  output: str,
+                  filter: str = 'J', #TODO: allow 'all'
+                  combine: str ='median',
+                  skyscale_method: str = 'subtract',
+                  register: bool = False,
+                  verbosity: int = 0,
+                  force: bool = False):
+
+    assert(filter in filter_vals)
+    read_files = read_and_sort(bads, flats, images)[filter]
+    # TODO distortion correct
+    processed = standard_process(read_files.bad, read_files.flat[0], read_files.images)
+    skyscaled = skyscale(processed, skyscale_method)
+    wcs = skyscaled[0].wcs
+    reprojected = [ccdproc.wcs_project(img, wcs) for img in skyscaled]
+    # TODO align to this if register True
+    output_image = ccdproc.Combiner(reprojected).median_combine()
+    try:
+        output_image.write(output, overwrite='True')
+    except OSError as err:
+        print(err, "writing output failed")
+
+
 
 
 # todo move everything below to testcase
