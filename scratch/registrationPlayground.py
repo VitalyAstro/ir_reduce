@@ -8,9 +8,9 @@ import image_registration
 # https://github.com/keflavich/image_registration/blob/master/image_registration/fft_tools/correlate2d.py
 # correlation in terms of convolution
 
-import reduce
+import ir_reduce
 
-processed = reduce.standard_process()
+processed = ir_reduce.standard_process()
 data = processed['J']
 
 i8 = data[8].copy()

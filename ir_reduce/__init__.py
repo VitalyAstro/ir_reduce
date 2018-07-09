@@ -1,1 +1,1 @@
-from .reduce import *
+from .ir_reduce import *

@@ -16,7 +16,7 @@ def discover(directory: str) -> Paths:
     bad_match = '*[Bb][Aa][Dd]*'
     flat_match = '*[Ff][Ll][Aa][Tt]*'
 
-    fits_files = {file for file in os.listdir(directory) if fnmatch(file, fits_match)}
+    fits_files = {os.path.join(directory,file) for file in os.listdir(directory) if fnmatch(file, fits_match)}
 
     # everything with 'bad' in it is a bad pixel mask, everything with 'flat' is a flat field
     bad_candidates = {file for file in fits_files if fnmatch(file, bad_match)}
