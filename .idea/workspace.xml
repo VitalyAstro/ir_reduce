@@ -2,16 +2,15 @@
 <project version="4">
   <component name="AnalysisUIOptions">
     <option name="SCOPE_TYPE" value="8" />
-    <option name="CUSTOM_SCOPE_NAME" value="Current File" />
+    <option name="CUSTOM_SCOPE_NAME" value="Changed Files" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="33d99e86-1fd2-48a1-9a80-b0fe1b0d109b" name="Default" comment="">
+      <change afterPath="$PROJECT_DIR$/ir_reduce/test/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/todolist.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cli.py" beforeDir="false" afterPath="$PROJECT_DIR$/cli.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ir_reduce/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/ir_reduce/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ir_reduce/image_discovery.py" beforeDir="false" afterPath="$PROJECT_DIR$/ir_reduce/image_discovery.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ir_reduce/ir_reduce.py" beforeDir="false" afterPath="$PROJECT_DIR$/ir_reduce/ir_reduce.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ir_reduce/test/test_reduce.py" beforeDir="false" afterPath="$PROJECT_DIR$/ir_reduce/test/test_reduce.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scratch/registrationPlayground.py" beforeDir="false" afterPath="$PROJECT_DIR$/scratch/registrationPlayground.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -31,20 +30,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ir_reduce.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ir_reduce/ir_reduce.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="311">
-              <caret line="141" column="20" selection-start-line="141" selection-start-column="11" selection-end-line="141" selection-end-column="20" />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="test_reduce.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ir_reduce/test/test_reduce.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="330">
-              <caret line="22" column="57" selection-start-line="22" selection-start-column="57" selection-end-line="22" selection-end-column="57" />
+            <state relative-caret-position="321">
+              <caret line="50" column="37" selection-start-line="50" selection-start-column="37" selection-end-line="50" selection-end-column="37" />
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
               </folding>
@@ -56,7 +46,7 @@
         <entry file="file://$PROJECT_DIR$/cli.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="318">
-              <caret line="34" column="48" lean-forward="true" selection-start-line="34" selection-start-column="48" selection-end-line="34" selection-end-column="48" />
+              <caret line="34" column="48" selection-start-line="34" selection-start-column="48" selection-end-line="34" selection-end-column="48" />
               <folding>
                 <element signature="e#23#38#0" expanded="true" />
               </folding>
@@ -64,11 +54,23 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="image_discovery.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="ir_reduce.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/ir_reduce/ir_reduce.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="314">
+              <caret line="212" column="16" selection-start-line="212" selection-start-column="16" selection-end-line="212" selection-end-column="16" />
+              <folding>
+                <element signature="e#101#119#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="image_discovery.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ir_reduce/image_discovery.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="18" column="41" selection-start-line="18" selection-start-column="41" selection-end-line="18" selection-end-column="41" />
+            <state relative-caret-position="225">
+              <caret line="15" column="32" selection-start-line="15" selection-start-column="32" selection-end-line="15" selection-end-column="32" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -90,11 +92,11 @@
       <find>figure</find>
       <find>do_every</find>
       <find>imageDisco</find>
-      <find>unit</find>
-      <find>u.</find>
       <find>filter</find>
       <find>filter</find>
       <find>filter in</find>
+      <find>unit</find>
+      <find>u.</find>
       <find>folder</find>
     </findStrings>
   </component>
@@ -110,17 +112,19 @@
         <option value="$PROJECT_DIR$/reduce/reduce.py" />
         <option value="$PROJECT_DIR$/reduce/test/test_reduce.py" />
         <option value="$PROJECT_DIR$/ir_reduce/__init__.py" />
-        <option value="$PROJECT_DIR$/ir_reduce/test/test_reduce.py" />
-        <option value="$PROJECT_DIR$/ir_reduce/ir_reduce.py" />
         <option value="$PROJECT_DIR$/cli.py" />
         <option value="$PROJECT_DIR$/ir_reduce/image_discovery.py" />
+        <option value="$PROJECT_DIR$/ir_reduce/test/__init__.py" />
+        <option value="$PROJECT_DIR$/ir_reduce/test/test_reduce.py" />
+        <option value="$PROJECT_DIR$/ir_reduce/ir_reduce.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="1366" />
-    <option name="width" value="840" />
-    <option name="height" value="525" />
+    <option name="x" value="393" />
+    <option name="y" value="146" />
+    <option name="width" value="838" />
+    <option name="height" value="521" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -239,29 +243,56 @@
     <history-entry file="py_test_in_test - 2018.07.09 at 16h 43m 23s.xml">
       <configuration name="py.test in test" configurationId="tests" />
     </history-entry>
+    <history-entry file="py_test_in_test - 2018.07.09 at 17h 18m 01s.xml">
+      <configuration name="py.test in test" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_in_test - 2018.07.09 at 17h 21m 11s.xml">
+      <configuration name="py.test in test" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_in_test - 2018.07.09 at 17h 43m 35s.xml">
+      <configuration name="py.test in test" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_in_test - 2018.07.09 at 17h 45m 14s.xml">
+      <configuration name="py.test in test" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_in_test - 2018.07.09 at 17h 45m 19s.xml">
+      <configuration name="py.test in test" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_in_test - 2018.07.09 at 18h 12m 02s.xml">
+      <configuration name="py.test in test" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_in_test - 2018.07.09 at 18h 12m 50s.xml">
+      <configuration name="py.test in test" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_in_test - 2018.07.09 at 18h 13m 19s.xml">
+      <configuration name="py.test in test" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_in_test - 2018.07.09 at 18h 13m 33s.xml">
+      <configuration name="py.test in test" configurationId="tests" />
+    </history-entry>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1362" y="0" width="1688" height="1023" extended-state="6" />
+    <frame x="-4" y="0" width="1688" height="1054" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.14345992" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14345992" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
-      <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info anchor="bottom" id="Python Console" order="7" visible="true" />
+      <window_info anchor="bottom" id="Inspection Results" order="8" weight="0.32867885" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info active="true" anchor="bottom" id="Version Control" order="7" visible="true" weight="0.32975295" />
+      <window_info anchor="bottom" id="Python Console" order="7" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.3288889" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Terminal" order="7" weight="0.32960597" />
+      <window_info anchor="bottom" id="Terminal" order="7" weight="0.3288889" />
       <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.3998935" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.38560688" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection Results" order="8" weight="0.32960597" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Find" order="1" />
     </layout>
   </component>
   <component name="VcsContentAnnotationSettings">
@@ -269,6 +300,13 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/ir_reduce/test/test_reduce.py</url>
+          <line>54</line>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+      </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog>
           <selected-grouping-rules>
@@ -276,18 +314,23 @@
           </selected-grouping-rules>
         </breakpoints-dialog>
       </breakpoints-dialog>
-      <option name="time" value="10" />
+      <option name="time" value="14" />
     </breakpoint-manager>
   </component>
   <component name="debuggerHistoryManager">
     <expressions id="evaluateExpression">
       <expression>
-        <expression-string>processed['J']</expression-string>
+        <expression-string>gain.unit</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
         <expression-string>image.unit</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>processed['J']</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
@@ -407,6 +450,13 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/reduce.py" />
+    <entry file="file:///usr/lib/python3.6/site-packages/_pytest/python.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="171">
+          <caret line="195" selection-start-line="195" selection-end-line="195" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/ir_reduce/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state>
@@ -414,39 +464,45 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ir_reduce/test/test_reduce.py">
+    <entry file="file://$PROJECT_DIR$/ir_reduce/image_discovery.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
-          <caret line="22" column="57" selection-start-line="22" selection-start-column="57" selection-end-line="22" selection-end-column="57" />
+        <state relative-caret-position="225">
+          <caret line="15" column="32" selection-start-line="15" selection-start-column="32" selection-end-line="15" selection-end-column="32" />
           <folding>
-            <element signature="e#0#13#0" expanded="true" />
+            <element signature="e#0#9#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ir_reduce/ir_reduce.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="311">
-          <caret line="141" column="20" selection-start-line="141" selection-start-column="11" selection-end-line="141" selection-end-column="20" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/cli.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="318">
-          <caret line="34" column="48" lean-forward="true" selection-start-line="34" selection-start-column="48" selection-end-line="34" selection-end-column="48" />
+          <caret line="34" column="48" selection-start-line="34" selection-start-column="48" selection-end-line="34" selection-end-column="48" />
           <folding>
             <element signature="e#23#38#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ir_reduce/image_discovery.py">
+    <entry file="file://$PROJECT_DIR$/ir_reduce/test/test_reduce.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="18" column="41" selection-start-line="18" selection-start-column="41" selection-end-line="18" selection-end-column="41" />
+        <state relative-caret-position="321">
+          <caret line="50" column="37" selection-start-line="50" selection-start-column="37" selection-end-line="50" selection-end-column="37" />
           <folding>
-            <element signature="e#0#9#0" expanded="true" />
+            <element signature="e#0#13#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ir_reduce/test/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ir_reduce/ir_reduce.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="314">
+          <caret line="212" column="16" selection-start-line="212" selection-start-column="16" selection-end-line="212" selection-end-column="16" />
+          <folding>
+            <element signature="e#101#119#0" expanded="true" />
           </folding>
         </state>
       </provider>

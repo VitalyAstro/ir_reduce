@@ -1,0 +1,7 @@
+- Make functions single-parameter and add vectorization on top -> easier testable
+- Test IO-functions
+- Test roundtrip
+- Take a look at discovery mode
+    * Do it with file-list anyway?
+- make --help print subcommands
+- evaluate ambiguity of optional positional arguments

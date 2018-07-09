@@ -116,14 +116,79 @@ def skyscale(image_list: Iterable[CCDData], method: str = 'subtract',
     return ret
 
 
-def interpolate(img: CCDData):
-    # TODO combiner does not care about this and marks it invalid still
-    from astropy.convolution import Gaussian2DKernel
-    from astropy.convolution import interpolate_replace_nans
-    kernel = Gaussian2DKernel(1)  # TODO this should be a 9x9 bilinear interpolation
+def fixPix(im, mask):
+    import scipy.ndimage as ndimage
+    """
+    taken from https://www.iaa.csic.es/~jmiguel/PANIC/PAPI/html/_modules/reduce/calBPM.html#fixPix 
+    (GPLv3)
+    
+    Applies a bad-pixel mask to the input image (im), creating an image with
+    masked values replaced with a bi-linear interpolation from nearby pixels.
+    Probably only good for isolated badpixels.
 
-    img.data[img.mask] = np.NaN
-    img.data = interpolate_replace_nans(img.data, kernel)
+    Usage:
+      fixed = fixpix(im, mask, [iraf=])
+
+    Inputs:
+      im = the image array
+      mask = an array that is True (or >0) where im contains bad pixels
+      iraf = True use IRAF.fixpix; False use numpy and a loop over
+             all pixels (extremelly low)
+
+    Outputs:
+      fixed = the corrected image
+
+    v1.0.0 Michael S. Kelley, UCF, Jan 2008
+
+    v1.1.0 Added the option to use IRAF's fixpix.  MSK, UMD, 25 Apr
+           2011
+
+    Notes
+    -----
+    - Non-IRAF algorithm is extremelly slow.
+    """
+
+    # create domains around masked pixels
+    dilated = ndimage.binary_dilation(mask)
+    domains, n = ndimage.label(dilated)
+
+    # loop through each domain, replace bad pixels with the average
+    # from nearest neigboors
+    y, x = np.indices(im.shape, dtype=np.int)[-2:]
+    # x = xarray(im.shape)
+    # y = yarray(im.shape)
+    cleaned = im.copy()
+    for d in (np.arange(n) + 1):
+        # find the current domain
+        i = (domains == d)
+
+        # extract the sub-image
+        x0, x1 = x[i].min(), x[i].max() + 1
+        y0, y1 = y[i].min(), y[i].max() + 1
+        subim = im[y0: y1, x0: x1]
+        submask = mask[y0: y1, x0: x1]
+        subgood = (submask == False)
+
+        cleaned[i * mask] = subim[subgood].mean()
+
+    return cleaned
+
+def interpolate(img: CCDData, dofixpix=False):
+    # TODO combiner does not care about this and marks it invalid still
+    from astropy.convolution import CustomKernel
+    from astropy.convolution import interpolate_replace_nans
+
+    if dofixpix:
+        print("begin fixpix")
+        img.data = fixPix(img.data,img.mask)
+        print("end fixpix")
+    else:
+        # TODO this here doesn't really work all that well -> extended regions cause artifacts at border
+        kernel_array=astropy.array([[1,1,1],[1,1,1],[1,1,1]])/9 # average of all surrounding pixels
+        kernel = CustomKernel(kernel_array)  # TODO the original pipeline used fixpix, which says it uses linear interpolation
+
+        img.data[np.logical_not(img.mask)] = np.NaN
+        img.data = interpolate_replace_nans(img.data, kernel)
 
     return img
 
@@ -144,8 +209,11 @@ def do_everything(bads: Iterable[str],
     # TODO distortion correct
     processed = standard_process(read_files.bad, read_files.flat[0], read_files.images)
     skyscaled = skyscale(processed, skyscale_method)
-    wcs = skyscaled[0].wcs
-    reprojected = [ccdproc.wcs_project(img, wcs) for img in skyscaled]
+
+    interpolated = [interpolate(image, dofixpix=True) for image in skyscaled]
+
+    wcs = interpolated[0].wcs
+    reprojected = [ccdproc.wcs_project(img, wcs) for img in interpolated]
     # TODO align to this if register True
     output_image = ccdproc.Combiner(reprojected).median_combine()
     #TODO MOST important: registration
