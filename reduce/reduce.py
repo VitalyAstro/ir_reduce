@@ -148,6 +148,7 @@ def do_everything(bads: Iterable[str],
     reprojected = [ccdproc.wcs_project(img, wcs) for img in skyscaled]
     # TODO align to this if register True
     output_image = ccdproc.Combiner(reprojected).median_combine()
+    #TODO MOST important: registration
     try:
         output_image.write(output, overwrite='True')
     except OSError as err:
