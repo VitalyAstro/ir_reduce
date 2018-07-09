@@ -10,7 +10,7 @@ from astropy.nddata import CCDData
 import ccdproc
 from astropy.stats import SigmaClip
 from astropy.io import fits
-from imageDiscovery import Paths
+from .image_discovery import Paths
 
 from functools import reduce  # TODO meh, maybe rename this file then...
 
