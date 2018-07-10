@@ -5,3 +5,4 @@
     * Do it with file-list anyway?
 - make --help print subcommands
 - evaluate ambiguity of optional positional arguments
+- Intermediate runners eg. for scamp/sextractor tests

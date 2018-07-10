@@ -7,10 +7,12 @@ import os
 import itertools
 from astropy import units as u
 from astropy.nddata import CCDData
+import astropy.io.fits as fits
 import ccdproc
 from astropy.stats import SigmaClip
 from astropy.io import fits
 from .image_discovery import Paths
+from .run_sextractor_scamp import run as run_scamp
 
 from functools import reduce  # TODO meh, maybe rename this file then...
 
@@ -49,7 +51,7 @@ def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable
             assert (all((image.header[image_category] == 'SCIENCE' for image in images_with_filter)))
 
             flats_with_filter = [image for image in flat_datas if image.header[filter_column] == filter_id]
-            #assert (len(flats_with_filter) == 1)  # TODO only one flat
+            # assert (len(flats_with_filter) == 1)  # TODO only one flat
             # TODO this assumes that you pass all possible flats. But CLI only wants one flat right now
         except KeyError as err:
             print("looks like there's no filter column in the fits data")
@@ -173,6 +175,7 @@ def fixPix(im, mask):
 
     return cleaned
 
+
 def interpolate(img: CCDData, dofixpix=False):
     # TODO combiner does not care about this and marks it invalid still
     from astropy.convolution import CustomKernel
@@ -180,12 +183,13 @@ def interpolate(img: CCDData, dofixpix=False):
 
     if dofixpix:
         print("begin fixpix")
-        img.data = fixPix(img.data,img.mask)
+        img.data = fixPix(img.data, img.mask)
         print("end fixpix")
     else:
         # TODO this here doesn't really work all that well -> extended regions cause artifacts at border
-        kernel_array=astropy.array([[1,1,1],[1,1,1],[1,1,1]])/9 # average of all surrounding pixels
-        kernel = CustomKernel(kernel_array)  # TODO the original pipeline used fixpix, which says it uses linear interpolation
+        kernel_array = astropy.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]]) / 9  # average of all surrounding pixels
+        kernel = CustomKernel(
+            kernel_array)  # TODO the original pipeline used fixpix, which says it uses linear interpolation
 
         img.data[np.logical_not(img.mask)] = np.NaN
         img.data = interpolate_replace_nans(img.data, kernel)
@@ -197,14 +201,13 @@ def do_everything(bads: Iterable[str],
                   flats: Iterable[str],
                   images: Iterable[str],
                   output: str,
-                  filter: str = 'J', #TODO: allow 'all'
-                  combine: str ='median',
+                  filter: str = 'J',  # TODO: allow 'all'
+                  combine: str = 'median',
                   skyscale_method: str = 'subtract',
                   register: bool = False,
                   verbosity: int = 0,
-                  force: bool = False):
-
-    assert(filter in filter_vals)
+                  force: bool = False) -> Tuple[CCDData, str, bytes]:
+    assert (filter in filter_vals)
     read_files = read_and_sort(bads, flats, images)[filter]
     # TODO distortion correct
     processed = standard_process(read_files.bad, read_files.flat[0], read_files.images)
@@ -217,14 +220,29 @@ def do_everything(bads: Iterable[str],
     # TODO align to this if register True
     output_image = ccdproc.Combiner(reprojected).median_combine()
     output_image.wcs = wcs
-    #TODO MOST important: registration
+
+    first_hdu = output_image.to_hdu()[0]
+    scamp_input = CCDData(first_hdu.data, header=first_hdu.header, unit=first_hdu.header['bunit'])
+
+    scamp_data, sextractor_data = run_scamp(scamp_input)
+
+    with open(output + 'scamp.head', 'w') as f:
+        f.write(scamp_data)
+    with open(output + 'sextractor.fits', 'wb') as f:
+        f.write(sextractor_data)
+
+    scamp_header = fits.Header.fromstring(scamp_data, sep='\n')
+    output_image.header.update(**scamp_header)
+
+    #TODO cant write without this, scamp value does not work with fitsio
+    output_image.header["COMMENT"] = "No comment"
+    output_image.header["HISTORY"] = "NO HISTORY"
     try:
         output_image.write(output, overwrite='True')
     except OSError as err:
         print(err, "writing output failed")
-    return output_image
 
-
+    return output_image, scamp_data, sextractor_data
 
 
 # todo move everything below to testcase
@@ -260,20 +278,22 @@ image_paths = [
 flat_paths = ['FlatK.fits', 'FlatJ.fits', 'FlatH.fits']
 bad_paths = ['bad_cold5.fits', 'bad_zero_sci.fits', 'bad_hot2.fits']
 
-if __name__ == '__main__':
-    images = [astropy.nddata.CCDData.read(image) for image in image_paths]
-    flats = [astropy.nddata.CCDData.read(image) for image in flat_paths]
-    bads = [astropy.nddata.CCDData.read(image) for image in bad_paths]
-    bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads))  # combine bad pixel masks
 
-    read_files = read_and_sort(bad_paths, flat_paths, image_paths)
 
-    processed = standard_process(read_files['J'].bad, read_files['J'].flat[0], read_files['J'].images)
-    skyscaled = skyscale(processed, 'subtract')
-    wcs = skyscaled[0].wcs
-    reprojected = [ccdproc.wcs_project(img, wcs) for img in skyscaled]
-    output = ccdproc.Combiner(reprojected).median_combine()
-    try:
-        output.write('pythonTestOut.fits')
-    except OSError as err:
-        print(err, "...ignoring")
+# if __name__ == '__main__':
+#     images = [astropy.nddata.CCDData.read(image) for image in image_paths]
+#     flats = [astropy.nddata.CCDData.read(image) for image in flat_paths]
+#     bads = [astropy.nddata.CCDData.read(image) for image in bad_paths]
+#     bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads))  # combine bad pixel masks
+#
+#     read_files = read_and_sort(bad_paths, flat_paths, image_paths)
+#
+#     processed = standard_process(read_files['J'].bad, read_files['J'].flat[0], read_files['J'].images)
+#     skyscaled = skyscale(processed, 'subtract')
+#     wcs = skyscaled[0].wcs
+#     reprojected = [ccdproc.wcs_project(img, wcs) for img in skyscaled]
+#     output = ccdproc.Combiner(reprojected).median_combine()
+#     try:
+#         output.write('pythonTestOut.fits')
+#     except OSError as err:
+#         print(err, "...ignoring")
