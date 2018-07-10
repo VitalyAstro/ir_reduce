@@ -216,11 +216,13 @@ def do_everything(bads: Iterable[str],
     reprojected = [ccdproc.wcs_project(img, wcs) for img in interpolated]
     # TODO align to this if register True
     output_image = ccdproc.Combiner(reprojected).median_combine()
+    output_image.wcs = wcs
     #TODO MOST important: registration
     try:
         output_image.write(output, overwrite='True')
     except OSError as err:
         print(err, "writing output failed")
+    return output_image
 
 
 
