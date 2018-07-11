@@ -13,3 +13,4 @@ __pycache__/
 *.par
 
 testdata
+.idea
