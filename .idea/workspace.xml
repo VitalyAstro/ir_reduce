@@ -6,12 +6,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="33d99e86-1fd2-48a1-9a80-b0fe1b0d109b" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/run_defaults.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ir_reduce/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/ir_reduce/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ir_reduce/ir_reduce.py" beforeDir="false" afterPath="$PROJECT_DIR$/ir_reduce/ir_reduce.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ir_reduce/run_sextractor_scamp.py" beforeDir="false" afterPath="$PROJECT_DIR$/ir_reduce/run_sextractor_scamp.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/todolist.txt" beforeDir="false" afterPath="$PROJECT_DIR$/todolist.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run_defaults.py" beforeDir="false" afterPath="$PROJECT_DIR$/run_defaults.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/aur-pkgs/scamp-bin/PKGBUILD" beforeDir="false" afterPath="$PROJECT_DIR$/tools/aur-pkgs/scamp-bin/PKGBUILD" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/aur-pkgs/sextractor-bin/PKGBUILD" beforeDir="false" afterPath="$PROJECT_DIR$/tools/aur-pkgs/sextractor-bin/PKGBUILD" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -22,11 +21,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="ir_reduce.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="ir_reduce.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ir_reduce/ir_reduce.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="97">
-              <caret line="228" column="34" selection-start-line="228" selection-start-column="34" selection-end-line="228" selection-end-column="34" />
+            <state relative-caret-position="342">
+              <caret line="234" column="26" selection-start-line="234" selection-start-column="26" selection-end-line="234" selection-end-column="26" />
               <folding>
                 <element signature="e#101#119#0" expanded="true" />
               </folding>
@@ -37,8 +36,8 @@
       <file leaf-file-name="card.py" pinned="false" current-in-tab="false">
         <entry file="file:///usr/lib/python3.6/site-packages/astropy/io/fits/card.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="188">
-              <caret line="310" selection-start-line="310" selection-end-line="310" />
+            <state relative-caret-position="362">
+              <caret line="306" column="30" selection-start-line="306" selection-start-column="30" selection-end-line="306" selection-end-column="30" />
             </state>
           </provider>
         </entry>
@@ -46,8 +45,8 @@
       <file leaf-file-name="header.py" pinned="false" current-in-tab="false">
         <entry file="file:///usr/lib/python3.6/site-packages/astropy/io/fits/header.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="188">
-              <caret line="363" selection-start-line="363" selection-end-line="363" />
+            <state relative-caret-position="165">
+              <caret line="1067" column="31" selection-start-line="1067" selection-start-column="31" selection-end-line="1067" selection-end-column="31" />
             </state>
           </provider>
         </entry>
@@ -55,17 +54,17 @@
       <file leaf-file-name="run_defaults.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/run_defaults.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="60">
-              <caret line="4" selection-start-line="4" selection-end-line="4" />
+            <state relative-caret-position="75">
+              <caret line="5" column="20" selection-start-line="5" selection-end-line="6" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="run_sextractor_scamp.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="run_sextractor_scamp.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ir_reduce/run_sextractor_scamp.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="617">
-              <caret line="70" column="38" selection-start-line="70" selection-start-column="23" selection-end-line="70" selection-end-column="38" />
+            <state relative-caret-position="417">
+              <caret line="92" column="20" selection-start-line="92" selection-start-column="20" selection-end-line="92" selection-end-column="20" />
               <folding>
                 <element signature="e#0#23#0" expanded="true" />
               </folding>
@@ -73,20 +72,20 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="file.py" pinned="false" current-in-tab="false">
-        <entry file="file:///usr/lib/python3.6/site-packages/astropy/io/fits/file.py">
+      <file leaf-file-name="pydevd.py" pinned="false" current-in-tab="false">
+        <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="323">
-              <caret line="413" selection-start-line="413" selection-end-line="413" />
+            <state relative-caret-position="369">
+              <caret line="1657" selection-start-line="1657" selection-end-line="1657" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="util.py" pinned="false" current-in-tab="false">
-        <entry file="file:///usr/lib/python3.6/site-packages/astropy/io/fits/util.py">
+      <file leaf-file-name="ndio.py" pinned="false" current-in-tab="false">
+        <entry file="file:///usr/lib/python3.6/site-packages/astropy/nddata/mixins/ndio.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-247">
-              <caret line="391" column="7" selection-start-line="391" selection-start-column="7" selection-end-line="391" selection-end-column="7" />
+            <state relative-caret-position="459">
+              <caret line="36" selection-start-line="36" selection-end-line="36" />
             </state>
           </provider>
         </entry>
@@ -94,7 +93,7 @@
       <file leaf-file-name="scamp.config" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ir_reduce/scamp.config">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1110">
+            <state relative-caret-position="1380">
               <caret line="92" column="28" selection-start-line="92" selection-start-column="23" selection-end-line="92" selection-end-column="28" />
             </state>
           </provider>
@@ -105,18 +104,6 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="90">
               <caret line="6" column="29" selection-start-line="6" selection-start-column="29" selection-end-line="6" selection-end-column="29" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="image_discovery.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ir_reduce/image_discovery.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="15" column="32" selection-start-line="15" selection-start-column="32" selection-end-line="15" selection-end-column="32" />
-              <folding>
-                <element signature="e#0#9#0" expanded="true" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -136,7 +123,7 @@
       <find>do_every</find>
       <find>imageDisco</find>
       <find>filter</find>
-      <find>filter in</find>
+      <find />
       <find>unit</find>
       <find>u.</find>
       <find>folder</find>
@@ -161,23 +148,24 @@
         <option value="$PROJECT_DIR$/ir_reduce/test/__init__.py" />
         <option value="$PROJECT_DIR$/ir_reduce/test/test_reduce.py" />
         <option value="$PROJECT_DIR$/ir_reduce/__init__.py" />
+        <option value="$PROJECT_DIR$/ir_reduce/ir_reduce.py" />
         <option value="$PROJECT_DIR$/run_defaults.py" />
         <option value="$PROJECT_DIR$/ir_reduce/run_sextractor_scamp.py" />
-        <option value="$PROJECT_DIR$/ir_reduce/ir_reduce.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="878" />
-    <option name="y" value="28" />
-    <option name="width" value="836" />
-    <option name="height" value="517" />
+    <option name="x" value="583" />
+    <option name="y" value="26" />
+    <option name="width" value="834" />
+    <option name="height" value="513" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -209,7 +197,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -371,10 +358,10 @@
     <frame x="-4" y="0" width="1928" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14323328" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14586625" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
-      <window_info anchor="bottom" id="Inspection Results" order="8" weight="0.32778355" />
+      <window_info active="true" anchor="bottom" id="Inspection Results" order="8" visible="true" weight="0.32778355" />
       <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32882413" />
       <window_info anchor="bottom" id="Python Console" order="7" weight="0.3298647" />
@@ -382,7 +369,7 @@
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="7" weight="0.3288889" />
       <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" visible="true" weight="0.3850156" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.3850156" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -390,6 +377,26 @@
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
     </layout>
+    <layout-to-restore>
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32882413" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14586625" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Inspection Results" order="11" weight="0.32778355" />
+      <window_info anchor="bottom" id="Python Console" order="7" weight="0.3298647" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.3850156" />
+      <window_info anchor="bottom" id="Terminal" order="8" weight="0.3288889" />
+      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Version Control" order="10" weight="0.32882413" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+    </layout-to-restore>
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
@@ -421,63 +428,53 @@
   <component name="debuggerHistoryManager">
     <expressions id="evaluateExpression">
       <expression>
-        <expression-string>output_image.write(output,overwrite=True)</expression-string>
+        <expression-string>scamp_header['HISTORY']</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>output_image.header</expression-string>
+        <expression-string>scamp_header['history']</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>output_image.header['HISTORY'] = &quot;&quot;</expression-string>
+        <expression-string>scamp_header</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>output_image.header['HISTORY'] = 0</expression-string>
+        <expression-string>scamp_header.remove('history')</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>output_image.header['COMMENT'] = ''</expression-string>
+        <expression-string>scamp_header.remove('comment')</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>sextractor_header</expression-string>
+        <expression-string>scamp_header.remove('HISTORY')</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>open(os.path.join(tmpdir,'sexout.fits'))</expression-string>
+        <expression-string>scamp_header.remove('COMMENT')</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>open(os.path.join(tmpdir,'sexout.head'))</expression-string>
+        <expression-string>scamp</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>open('sexout.head')</expression-string>
+        <expression-string>**scamp_header</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/ir_reduce/ir_reduce.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3180">
-          <caret line="212" column="16" selection-start-line="212" selection-start-column="16" selection-end-line="212" selection-end-column="16" />
-          <folding>
-            <element signature="e#101#119#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/reduce.py" />
     <entry file="file://$PROJECT_DIR$/reduce.py" />
     <entry file="file://$PROJECT_DIR$/scratch.py" />
@@ -527,10 +524,8 @@
     <entry file="file:///usr/lib/python3.6/site-packages/astropy/nddata/ccddata.py" />
     <entry file="file:///usr/lib/python3.6/site-packages/astropy/io/fits/header.py" />
     <entry file="file:///usr/lib/python3.6/site-packages/astropy/wcs/wcs.py" />
-    <entry file="file:///usr/lib/python3.6/site-packages/astropy/io/registry.py" />
     <entry file="file:///usr/lib/python3.6/site-packages/astropy/wcs/wcs.py" />
     <entry file="file:///usr/lib/python3.6/site-packages/astropy/nddata/ccddata.py" />
-    <entry file="file:///usr/lib/python3.6/site-packages/astropy/nddata/mixins/ndio.py" />
     <entry file="file:///usr/lib/python3.6/site-packages/ccdproc/log_meta.py" />
     <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_imps/_pydev_execfile.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -573,9 +568,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="15">
           <caret line="1" column="35" selection-start-line="1" selection-start-column="35" selection-end-line="1" selection-end-column="35" />
-          <folding>
-            <element signature="e#0#24#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -583,51 +575,27 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="190">
           <caret line="69" column="36" selection-start-line="69" selection-start-column="30" selection-end-line="69" selection-end-column="36" />
-          <folding>
-            <element signature="e#23#38#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file:///usr/lib/python3.6/site-packages/astropy/io/fits/util.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-247">
+        <state relative-caret-position="5535">
           <caret line="391" column="7" selection-start-line="391" selection-start-column="7" selection-end-line="391" selection-end-column="7" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/ir_reduce/scamp.config">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1110">
+        <state relative-caret-position="1380">
           <caret line="92" column="28" selection-start-line="92" selection-start-column="23" selection-end-line="92" selection-end-column="28" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ir_reduce/sex.config">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" column="29" selection-start-line="6" selection-start-column="29" selection-end-line="6" selection-end-column="29" />
         </state>
       </provider>
     </entry>
     <entry file="file:///usr/lib/python3.6/site-packages/astropy/io/fits/file.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
+        <state relative-caret-position="5835">
           <caret line="413" selection-start-line="413" selection-end-line="413" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/lib/python3.6/site-packages/astropy/io/fits/header.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="188">
-          <caret line="363" selection-start-line="363" selection-end-line="363" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/lib/python3.6/site-packages/astropy/io/fits/card.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="188">
-          <caret line="310" selection-start-line="310" selection-end-line="310" />
         </state>
       </provider>
     </entry>
@@ -641,29 +609,71 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/run_defaults.py">
+    <entry file="file://$PROJECT_DIR$/ir_reduce/sex.config">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" selection-start-line="4" selection-end-line="4" />
+        <state relative-caret-position="90">
+          <caret line="6" column="29" selection-start-line="6" selection-start-column="29" selection-end-line="6" selection-end-column="29" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ir_reduce/run_sextractor_scamp.py">
+    <entry file="file:///usr/lib/python3.6/site-packages/astropy/io/fits/header.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="617">
-          <caret line="70" column="38" selection-start-line="70" selection-start-column="23" selection-end-line="70" selection-end-column="38" />
-          <folding>
-            <element signature="e#0#23#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="165">
+          <caret line="1067" column="31" selection-start-line="1067" selection-start-column="31" selection-end-line="1067" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/lib/python3.6/site-packages/astropy/io/fits/card.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="362">
+          <caret line="306" column="30" selection-start-line="306" selection-start-column="30" selection-end-line="306" selection-end-column="30" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/ir_reduce/ir_reduce.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="97">
-          <caret line="228" column="34" selection-start-line="228" selection-start-column="34" selection-end-line="228" selection-end-column="34" />
+        <state relative-caret-position="342">
+          <caret line="234" column="26" selection-start-line="234" selection-start-column="26" selection-end-line="234" selection-end-column="26" />
           <folding>
             <element signature="e#101#119#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/lib/python3.6/site-packages/astropy/nddata/mixins/ndio.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="459">
+          <caret line="36" selection-start-line="36" selection-end-line="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/lib/python3.6/site-packages/astropy/io/registry.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="347">
+          <caret line="594" selection-start-line="594" selection-end-line="594" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="369">
+          <caret line="1657" selection-start-line="1657" selection-end-line="1657" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run_defaults.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" column="20" selection-start-line="5" selection-end-line="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ir_reduce/run_sextractor_scamp.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="417">
+          <caret line="92" column="20" selection-start-line="92" selection-start-column="20" selection-end-line="92" selection-end-column="20" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
           </folding>
         </state>
       </provider>
