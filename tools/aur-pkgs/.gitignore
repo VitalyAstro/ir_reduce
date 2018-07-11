@@ -1,6 +1,5 @@
 *.tar.xz
 *.rpm
-<<<<<<< HEAD
+
 pkg
-=======
->>>>>>> 5eb3142a6b681fe74044d9aaf58c22e0bed35c53
+
