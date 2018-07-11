@@ -1,12 +1,13 @@
 # Maintainer: Sebastian Meßlinger
 pkgname=astromatic-sextractor-bin
-pkgver=current
-pkgrel=2
+pkgver=2.19.5
+pkgrel=1
 pkgdesc="Astromatic Sextractor, from .rpm file"
 arch=('x86_64')
 url="http://www.astromatic.net/software/sextractor"
 license=('GPLv3')
-depends=('')
+depends=('fftw' 'blas' 'cblas' 'lapack')
+provides=('sextractor')
 makedepends=('rpmextract')
 options=('emptydirs')
 source=("http://www.astromatic.net/download/sextractor/sextractor-2.19.5-1.x86_64.rpm")

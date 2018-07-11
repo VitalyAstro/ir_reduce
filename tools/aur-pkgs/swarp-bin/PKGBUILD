@@ -1,20 +1,20 @@
 # Maintainer: Sebastian Meßlinger
-pkgname=astromatic-scamp-bin
-pkgver=2.0.4
+pkgname=astromatic-swarp-bin
+pkgver=2.38
 pkgrel=1
 pkgdesc="Astromatic Scamp, from .rpm file"
 arch=('x86_64')
 url="http://www.astromatic.net/software/scamp"
 license=('GPLv3')
 depends=('sextractor')
-provides=('scamp')
+provides=('swarp')
 makedepends=('rpmextract')
 options=('emptydirs')
-source=("http://www.astromatic.net/download/scamp/scamp-2.0.4-1.x86_64.rpm")
-sha256sums=('db9d6476f15194250ae8c561b2c4344ea3302b0afca3c50aa282a240a1278df8')
+source=("http://www.astromatic.net/download/swarp/swarp-2.38.0-1.x86_64.rpm")
+sha256sums=('00105fc7b6b6ee3abcf8d0fedb6db185c398fd234e71232ec6021e09491991ac')
 build() {
   cd "$srcdir"
-  rpmextract.sh ../scamp-2.0.4-1.x86_64.rpm
+  rpmextract.sh ../swarp-2.38.0-1.x86_64.rpm
 }
 
 package() {
