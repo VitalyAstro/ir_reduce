@@ -1,0 +1,22 @@
+# Maintainer: Sebastian Meßlinger
+pkgname=astromatic-scamp-bin
+pkgver=current
+pkgrel=2
+pkgdesc="Astromatic Scamp, from .rpm file"
+arch=('x86_64')
+url="http://www.astromatic.net/software/scamp"
+license=('GPLv3')
+depends=('')
+makedepends=('rpmextract')
+options=('emptydirs')
+source=("http://www.astromatic.net/download/scamp/scamp-2.0.4-1.x86_64.rpm")
+sha256sums=('db9d6476f15194250ae8c561b2c4344ea3302b0afca3c50aa282a240a1278df8')
+build() {
+  cd "$srcdir"
+  rpmextract.sh ../scamp-2.0.4-1.x86_64.rpm
+}
+
+package() {
+cd $srcdir
+mv  $srcdir/usr $pkgdir
+}

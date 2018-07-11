@@ -1,0 +1,22 @@
+# Maintainer: Sebastian Meßlinger
+pkgname=astromatic-sextractor-bin
+pkgver=current
+pkgrel=2
+pkgdesc="Astromatic Sextractor, from .rpm file"
+arch=('x86_64')
+url="http://www.astromatic.net/software/sextractor"
+license=('GPLv3')
+depends=('')
+makedepends=('rpmextract')
+options=('emptydirs')
+source=("http://www.astromatic.net/download/sextractor/sextractor-2.19.5-1.x86_64.rpm")
+sha256sums=('50bb3b15452d15e25999f88dbf37d30a11afa762fe914849cd62cb7fe3099714')
+build() {
+  cd "$srcdir"
+  rpmextract.sh ../sextractor-2.19.5-1.x86_64.rpm
+}
+
+package() {
+cd $srcdir
+mv  $srcdir/usr $pkgdir
+}
