@@ -15,9 +15,10 @@ this_dir, this_file = os.path.split(__file__)
 
 class Config:
     def __init__(self):
-        self.sextractor_param: str = os.path.join(this_dir, 'default.param'),
-        self.sextractor_config: str = os.path.join(this_dir, 'sex.config'),
-        self.scamp_config: str = os.path.join(this_dir, 'scamp.config')
+        self.sextractor_param = os.path.join(this_dir, 'default.param')
+        self.sextractor_config = os.path.join(this_dir, 'sex.config')
+        self.scamp_config = os.path.join(this_dir, 'scamp.config')
+        self.sextractor_outfile = 'sexout.fits'
         self.sex_cmd = 'sex'
         self.scamp_cmd = 'scamp'
 
@@ -38,7 +39,7 @@ def astroref_file(input_path: str, output_path: str) -> str:
 
     input_data = CCDData.read(input_path)
 
-    scamp_data, sextractor_data = run(input_data)
+    scamp_data, sextractor_data = run_astroref(input_data)
 
     with open(ouput_path + 'scamp.head', 'w') as f:
         f.write(scamp_data)
@@ -62,28 +63,35 @@ def parse_key_val_config(input: str) -> Dict[str,str]:
     lines = [re.sub(r'#.*', '', line) for line in lines] # get rid of everything after '#'
     ret = dict()
     for line in lines:
+        if line.strip() == '':
+            continue
         try:
             key, value = re.split(r'\s+', line.strip())
+            ret[key] = value
         except ValueError as err:
-            if 'values to unpack' in err:
-                logging.warning('Got ambigous line: ', line)
+            if 'values to unpack' in str(err):
+                print('Got ambiguous line: ', line)
             else:
                 raise
-        ret[key] = value
+    return ret
 
-def verify_configs(config: Config):
+def is_config_valid(config: Config) -> bool:
     """TODO: Verify that the IO-parameters in the config files of scamp and sextractor fit together"""
     with open(config.sextractor_config) as f:
         sex_cfg = parse_key_val_config(f.read())
     with open(config.scamp_config) as f:
         scamp_cfg = parse_key_val_config(f.read())
 
+    valid = config.sextractor_outfile == sex_cfg['CATALOG_NAME'] and\
+            sex_cfg['CATALOG_TYPE'] == 'FITS_LDAC'
+
+    return valid
 
 
 
-def run(input_data: Union[str, CCDData], config: Config = Config.default(), working_dir: str = '', verbose: int = 1) -> Tuple[str, bytes]:
+def run_astroref(input_data: Union[str, CCDData], config: Config = Config.default(), working_dir: str = '', verbose: int = 1) -> Tuple[str, bytes]:
     """
-    TODO: maybe wrapper to call with configs received as string?
+    TODO maybe wrapper that writes out strings and CCDData to files so that this function can only work with FS data
 
     :param input_data:
     :param config:
@@ -92,11 +100,11 @@ def run(input_data: Union[str, CCDData], config: Config = Config.default(), work
     :return:
     """
 
-    verify_configs(config)
+    is_config_valid(config)
 
     working_dir = working_dir if working_dir else tempfile.TemporaryDirectory() # gets deleted automatically
     shutil.copy(config.sextractor_param, working_dir)
-    open('default.conv', 'a').close()  # touch #TODO make configurable
+    open('default.conv', 'a').close()  # touch #TODO make configurable? Convolves image in sextractor with filter
 
     if isinstance(input_data, CCDData):
         fname = os.path.join(working_dir, 'sextractorInput.fits')
@@ -120,7 +128,7 @@ def run(input_data: Union[str, CCDData], config: Config = Config.default(), work
         print(sex_process.stderr, file=sys.stdout)
 
     # todo output hardcoded. write to config file?
-    scamp_process = sp.run([config.scamp_cmd, 'sexout.fits', '-c', config.scamp_config], cwd=working_dir, stdout=sp.PIPE, stderr=sp.PIPE,
+    scamp_process = sp.run([config.scamp_cmd, config.sextractor_outfile , '-c', config.scamp_config], cwd=working_dir, stdout=sp.PIPE, stderr=sp.PIPE,
                            universal_newlines=True, timeout=30)
     if scamp_process.returncode != 0:
         raise RuntimeError(
@@ -136,9 +144,9 @@ def run(input_data: Union[str, CCDData], config: Config = Config.default(), work
         print(scamp_process.stderr, file=sys.stdout)
 
     scamp_data, sextractor_data = None, None
-    with open(os.path.join(working_dir, 'sexout.head')) as scamp_outfile:
+    with open(os.path.join(working_dir, config.sextractor_outfile.replace('.fits', '.head'))) as scamp_outfile:
         scamp_data = scamp_outfile.read()
-    with open(os.path.join(working_dir, 'sexout.fits'), 'rb') as f:  # see name in scamp runner
+    with open(os.path.join(working_dir, config.sextractor_outfile), 'rb') as f:  # see name in scamp runner
         sextractor_data = f.read()
 
 

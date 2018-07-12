@@ -12,7 +12,7 @@ import ccdproc
 from astropy.stats import SigmaClip
 from astropy.io import fits
 from .image_discovery import Paths
-from .run_sextractor_scamp import run as run_scamp
+from .run_sextractor_scamp import run_astroref as run_scamp
 
 from functools import reduce  # TODO meh, maybe rename this file then...
 
