@@ -83,10 +83,10 @@ def is_config_valid(config: Config) -> bool:
         scamp_cfg = parse_key_val_config(f.read())
 
     valid = config.sextractor_outfile == sex_cfg['CATALOG_NAME'] and\
-            sex_cfg['CATALOG_TYPE'] == 'FITS_LDAC'
+            sex_cfg['CATALOG_TYPE'] == 'FITS_LDAC' and\
+            sex_cfg['HEADER_SUFFIX'] == '.head'
 
     return valid
-
 
 
 def run_astroref(input_data: Union[str, CCDData], config: Config = Config.default(), working_dir: str = '', verbose: int = 1) -> Tuple[str, bytes]:
@@ -97,12 +97,13 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
     :param config:
     :param working_dir:
     :param verbose:
-    :return:
+    :return: tuple(scamp_data, sextractor_data)
     """
 
-    is_config_valid(config)
+    if not is_config_valid(config):
+        raise ValueError()
 
-    working_dir = working_dir if working_dir else tempfile.TemporaryDirectory() # gets deleted automatically
+    working_dir = working_dir if working_dir else tempfile.TemporaryDirectory().name # gets deleted automatically
     shutil.copy(config.sextractor_param, working_dir)
     open('default.conv', 'a').close()  # touch #TODO make configurable? Convolves image in sextractor with filter
 
@@ -127,7 +128,6 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
         print(sex_process.stdout)
         print(sex_process.stderr, file=sys.stdout)
 
-    # todo output hardcoded. write to config file?
     scamp_process = sp.run([config.scamp_cmd, config.sextractor_outfile , '-c', config.scamp_config], cwd=working_dir, stdout=sp.PIPE, stderr=sp.PIPE,
                            universal_newlines=True, timeout=30)
     if scamp_process.returncode != 0:
@@ -146,7 +146,7 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
     scamp_data, sextractor_data = None, None
     with open(os.path.join(working_dir, config.sextractor_outfile.replace('.fits', '.head'))) as scamp_outfile:
         scamp_data = scamp_outfile.read()
-    with open(os.path.join(working_dir, config.sextractor_outfile), 'rb') as f:  # see name in scamp runner
+    with open(os.path.join(working_dir, config.sextractor_outfile), 'rb') as f:
         sextractor_data = f.read()
 
 
