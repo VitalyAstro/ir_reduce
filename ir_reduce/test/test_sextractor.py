@@ -7,7 +7,7 @@ from .. import run_astroref, astroref_file, astroreff_all, parse_key_val_config,
 from .. import sp
 
 
-class TestConfig():
+class ConfigForTest():
     """Offers a context manager that fills a config with empty tempfiles and deletes them after execution"""
 
     def __init__(self):
@@ -70,10 +70,10 @@ class TestRun:
 
 
     def test_config_valid(self):
-        with TestConfig() as valid_config:
+        with ConfigForTest() as valid_config:
             assert is_config_valid(valid_config)
 
-        with TestConfig() as invalid_config:
+        with ConfigForTest() as invalid_config:
             invalid_config.sextractor_outfile = "not the same as catalogue"
             with open(invalid_config.sextractor_config, 'w') as f:
                 f.write(dedent('''
@@ -83,7 +83,7 @@ class TestRun:
                 '''))
             assert not is_config_valid(invalid_config)
 
-        with TestConfig() as invalid_config:
+        with ConfigForTest() as invalid_config:
             with open(invalid_config.sextractor_config, 'w') as f:
                 f.write(dedent('''
                 CATALOG_TYPE FITS_LDAC
@@ -92,7 +92,7 @@ class TestRun:
                 '''))
             assert not is_config_valid(invalid_config)
 
-        with TestConfig() as invalid_config:
+        with ConfigForTest() as invalid_config:
             with open(invalid_config.sextractor_config, 'w') as f:
                 f.write(dedent('''
                 CATALOG_TYPE NOT_FITS_LDAC
@@ -104,7 +104,7 @@ class TestRun:
 
 
     def test_run_with_fake_subprocess(self):
-        with mock.patch('subprocess.run', recorder), TestConfig() as config:
+        with mock.patch('subprocess.run', recorder), ConfigForTest() as config:
             scamp_data, sex_data = run_astroref('dummyFilename', config)
             assert '' == scamp_data
             assert '' == sex_data
