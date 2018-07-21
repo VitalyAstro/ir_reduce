@@ -2,7 +2,9 @@ import pytest
 from textwrap import dedent
 import tempfile
 from unittest import mock
+from unittest.mock import mock_open
 import os
+import shutil
 from .. import run_astroref, astroref_file, astroreff_all, parse_key_val_config, is_config_valid, Config
 from .. import sp
 
@@ -24,6 +26,11 @@ class ConfigForTest():
             CATALOG_TYPE FITS_LDAC
             CATALOG_NAME sexout.fits 
             HEADER_SUFFIX .head
+            '''))
+
+        with open(config.scamp_config , 'w') as f:
+            f.write(dedent('''
+            CATALOG_NAME sexout.fits
             '''))
 
     def __enter__(self):
@@ -104,10 +111,25 @@ class TestRun:
 
 
     def test_run_with_fake_subprocess(self):
-        with mock.patch('subprocess.run', recorder), ConfigForTest() as config:
-            scamp_data, sex_data = run_astroref('dummyFilename', config)
-            assert '' == scamp_data
-            assert '' == sex_data
+        mock_run = mock.Mock()
+        mock_process = mock.Mock
+
+        with mock.patch('subprocess.run', mock_run), ConfigForTest() as config, tempfile.TemporaryDirectory() as tmpdir:
+            # mock/file setup
+            mock_run.run.return_value = mock_process
+            mock_process.returncode = 0
+
+            with open(os.path.join(tmpdir, config.sextractor_outfile), 'w') as sexout:
+                sexout.write('foo')
+            with open(os.path.join(tmpdir, config.sextractor_outfile.replace('.fits', '.head')), 'w') as scampout:
+                scampout.write('bar')
+            # test run
+            scamp_data, sex_data = run_astroref('dummyFilename', config, working_dir=tmpdir)
+            assert 'bar' == scamp_data
+            assert b'foo' == sex_data
+
+    def test_echo_present(self):
+        assert shutil.which('echo')
 
     @pytest.mark.integration #TODO mark for "need echo present"
     def test_run_with_fake_binaries(self):

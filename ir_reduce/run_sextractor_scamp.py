@@ -144,6 +144,8 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
         print(scamp_process.stderr, file=sys.stdout)
 
     scamp_data, sextractor_data = None, None
+    # SExtractor will write to CATALOG_NAME (sextractor config)
+    # by HEADER_SUFFIX in its config scamp will write its output to sextractor_outfile but fits->head
     with open(os.path.join(working_dir, config.sextractor_outfile.replace('.fits', '.head'))) as scamp_outfile:
         scamp_data = scamp_outfile.read()
     with open(os.path.join(working_dir, config.sextractor_outfile), 'rb') as f:
