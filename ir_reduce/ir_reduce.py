@@ -187,7 +187,7 @@ def interpolate(img: CCDData, dofixpix=False):
         print("end fixpix")
     else:
         # TODO this here doesn't really work all that well -> extended regions cause artifacts at border
-        kernel_array = astropy.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]]) / 9  # average of all surrounding pixels
+        kernel_array = np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]]) / 9  # average of all surrounding pixels
         kernel = CustomKernel(
             kernel_array)  # TODO the original pipeline used fixpix, which says it uses linear interpolation
 
