@@ -1,0 +1,11 @@
+include *.md
+
+include LICENSE
+
+include *.conf  
+include *.config
+include *.conv
+include *.db
+include *.param
+include *.py
+
