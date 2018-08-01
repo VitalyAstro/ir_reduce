@@ -11,7 +11,7 @@ import astropy.io.fits as fits
 import ccdproc
 from astropy.stats import SigmaClip
 from astropy.io import fits
-from .image_discovery import Paths
+from .image_discovery import Paths # TODO naming is a little weird
 from .run_sextractor_scamp import run_astroref as run_scamp
 
 from functools import reduce  # TODO meh, maybe rename this file then...
@@ -29,11 +29,12 @@ object_ID = 'OBJECT'
 
 def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable[str]) -> Dict[str, Paths]:
     """
+    read in images and sort them by filter, return the CCDDatas
 
-    :param bads:
-    :param flats:
-    :param exposures:
-    :return:
+    :param bads: list of paths to bad pixel frames
+    :param flats: list of paths to flat frames
+    :param exposures: list of paths to images
+    :return: A dictionary which maps filter-id -> [bads, flats, images]
     """
     # TODO move asserts into unit-test or introduce a validation flag/wrapper
     assert (all(os.path.isfile(path) for path in itertools.chain(bads, flats, exposures)))
@@ -65,6 +66,14 @@ def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable
 
 # TODO standard_process(bads,flats,images) -> List[CCDData]
 def standard_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) -> List[CCDData]:
+    """
+    Do the ccdproc operation on a list of images. includes some extra logic for NOTCAM images to get the
+    gain and readnoise out of the headers
+    :param bads:
+    :param flat:
+    :param images:
+    :return:
+    """
     bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads))  # combine bad pixel masks
 
     reduceds = []
@@ -177,6 +186,14 @@ def fixPix(im, mask):
 
 
 def interpolate(img: CCDData, dofixpix=False):
+    """
+    Takes a image with a mask for bad pixels and interpolate over the bad pixels
+
+    :param img: the image you want to interpolate bad pixels in
+    :param dofixpix: use the fixpix-algorithm?
+    :return: interpolated image
+
+    """
     # TODO combiner does not care about this and marks it invalid still
     from astropy.convolution import CustomKernel
     from astropy.convolution import interpolate_replace_nans
@@ -207,6 +224,21 @@ def do_everything(bads: Iterable[str],
                   register: bool = False,
                   verbosity: int = 0,
                   force: bool = False) -> Tuple[CCDData, str, bytes]:
+    """
+    Take a list of files for badPixel, flatfield and exposures + a bunch of processing parameters and reduce them
+    to write an output filec
+    :param bads: list of paths to bad pixel frames
+    :param flats: list of paths to flat frames
+    :param exposures: list of paths to images
+    :param output: Path to write output image to #TODO make this optional -> no output?
+    :param filter: which spectral band to look at
+    :param combine: either 'median' or 'average'
+    :param skyscale_method: either 'subtract' or 'divide'
+    :param register: use cross correlation to overlay images more accurately
+    :param verbosity: How talkative are we today?
+    :param force: Try and ignore errors
+    :return: (combined_output, scamp_output, sextractor_output)
+    """
     assert (filter in filter_vals)
     read_files = read_and_sort(bads, flats, images)[filter]
     # TODO distortion correct

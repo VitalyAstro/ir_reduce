@@ -14,6 +14,9 @@ this_dir, this_file = os.path.split(__file__)
 
 
 class Config:
+    """
+    a helper class to bundle parameters for scamp/sextractor
+    """
     def __init__(self):
         self.sextractor_param = os.path.join(this_dir, 'default.param')
         self.sextractor_config = os.path.join(this_dir, 'sex.config')
@@ -28,11 +31,22 @@ class Config:
 
 
 def astroreff_all(inputFiles: List[str]) -> None:
+    """
+
+    :param inputFiles:
+    :return:
+    """
     for file in inputFiles:
         astroref_file(file, file + '_astroreff')
 
 
 def astroref_file(input_path: str, output_path: str) -> str:
+    """
+
+    :param input_path:
+    :param output_path:
+    :return:
+    """
     input_path = os.path.abspath(input_path)
     output_path.replace('.fits', '')
     ouput_path = os.path.abspath(output_path)
@@ -58,6 +72,10 @@ def astroref_file(input_path: str, output_path: str) -> str:
 
 
 def parse_key_val_config(input: str) -> Dict[str,str]:
+    """
+    :param input:
+    :return:
+    """
     import re
     lines = input.splitlines()
     lines = [re.sub(r'#.*', '', line) for line in lines] # get rid of everything after '#'
@@ -76,7 +94,10 @@ def parse_key_val_config(input: str) -> Dict[str,str]:
     return ret
 
 def is_config_valid(config: Config) -> bool:
-    """TODO: Verify that the IO-parameters in the config files of scamp and sextractor fit together"""
+    """
+    TODO: Verify that the IO-parameters in the config files of scamp and sextractor fit together
+
+    """
     with open(config.sextractor_config) as f:
         sex_cfg = parse_key_val_config(f.read())
     with open(config.scamp_config) as f:
