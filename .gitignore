@@ -5,6 +5,10 @@ __pycache__/
 *.pytest_cache
 dist
 .tox
+.coverage
+htmlcov
+*.egg-info
+_build
 
 # C extensions
 *.so

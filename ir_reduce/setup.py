@@ -1,6 +1,9 @@
 import setuptools
+import os.path as p
 
-with open("README.md", "r") as fh:
+readme_path = p.join(p.dirname(p.abspath(__file__)),'README.md')
+
+with open(readme_path, "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
@@ -23,6 +26,6 @@ setuptools.setup(
     ),
     keywords='astronomy infrared ccd reduction photometry',
     python_requires='>=3.6',
-    install_requires=['astropy>=3', 'numpy>1.14', 'ccdproc>=1.3.0', 'pytest', 'tox']
+    install_requires=['astropy>=3', 'numpy>1.14', 'ccdproc>=1.3.0', 'pytest', 'tox', 'sphinx']
 
 )
