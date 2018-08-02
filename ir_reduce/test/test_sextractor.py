@@ -9,7 +9,7 @@ from .. import run_astroref, astroref_file, astroreff_all, parse_key_val_config,
 from .. import sp
 
 
-class ConfigForTest():
+class ConfigForTest:
     """Offers a context manager that fills a config with empty tempfiles and deletes them after execution"""
 
     def __init__(self):
