@@ -20,8 +20,8 @@ for file in files:
             '-CATALOG_NAME', catfile])
 
     # print(['ds9', '-tile', checkfile, '-histequ', file, '-log'])
-    sp.Popen(['ds9', '-tile', checkfile, '-histequ', file, '-log'], shell=False,
-             stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE, close_fds=True)
+    #sp.Popen(['ds9', '-tile', checkfile, '-log', file, '-log'], shell=False,
+    #         stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE, close_fds=True)
 
     sp.run(['scamp', catfile, '-c', 'scamp.config'])
 
@@ -45,3 +45,7 @@ for file in files:
 
     image_data.write(astroreffed, overwrite=True)
 
+    sp.Popen(['ds9', '-tile',
+              astroreffed, '-log', '-scale', 'zmax', '-catalog', '2mass',
+              file,        '-log', '-scale', 'zmax', '-catalog', '2mass'],
+             shell=False, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE, close_fds=True)
