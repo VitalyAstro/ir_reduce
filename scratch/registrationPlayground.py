@@ -17,7 +17,7 @@ i8 = data[8].copy()
 i0 = data[0].copy()
 
 # this does not work (aka offset ~0) , due to bad/hot pixels
-image_registration.cross_correlation_shifts(i8.data,i0.data, verbose=True)
+image_registration.cross_correlation_shifts(i8.data, i0.data, verbose=True)
 # image_registration.fft_tools.correlate2d is what it does under the hood
 
 

@@ -95,6 +95,43 @@ def standard_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) 
         reduceds.append(reduced)
     return reduceds
 
+def tiled_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) -> List[CCDData]:
+    """
+    Do the ccdproc operation on a list of images. includes some extra logic for NOTCAM images to get the
+    gain and readnoise out of the headers
+    :param bads:
+    :param flat:
+    :param images:
+    :return:
+    """
+    bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads))  # combine bad pixel masks
+
+    reduceds = []
+    for image in images:
+        image.mask = bad
+        # Tiling: http://www.not.iac.es/instruments/notcam/guide/observe.html#reductions
+        # 0-> LL, 1->LR, 2->UR, 3->UL
+        tile_table = [None, s_[512:,0:512], s_[512:,512:], s_[0:512,512:], s_[0:512,0:512]]
+        reduced = image.copy()
+
+        for idx in range(1, 5):
+            gain = image.header['GAIN'+str(idx)]
+            readnoise = image.header['RDNOISE'+str(idx)]
+            tile = ccdproc.ccd_process(image,
+                                          oscan=None,
+                                          error=True,
+                                          gain=gain * u.electron / u.count,
+                                          # TODO check if this is right or counts->adu required
+                                          readnoise=readnoise * u.electron,
+                                          dark_frame=None,
+                                          master_flat=flat,
+                                          bad_pixel_mask=bad)
+            image.data[tile_table[idx]] = tile.data[tile_table[idx]]
+            reduced.header = tile.header
+            reduced.wcs = tile.wcs
+            reduced.unit = tile.unit
+        reduceds.append(reduced)
+    return reduceds
 
 def skyscale(image_list: Iterable[CCDData], method: str = 'subtract',
              cut: Tuple[Union[slice, int]] = s_[200:800, 200:800]) -> List[CCDData]:
@@ -256,6 +293,7 @@ def do_everything(bads: Iterable[str],
     # astropy.fits.io.Header object but an ordered dict?
     output_image.header = astropy.io.fits.header.Header(output_image.header)
 
+    #TODO why this?
     first_hdu = output_image.to_hdu()[0]
     scamp_input = CCDData(first_hdu.data, header=first_hdu.header, unit=first_hdu.header['bunit'])
 
