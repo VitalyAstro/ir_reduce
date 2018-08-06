@@ -264,68 +264,12 @@ def do_everything(bads: Iterable[str],
         f.write(sextractor_data)
 
     scamp_header = fits.Header.fromstring(scamp_data, sep='\n')
-    output_image.header.update(**scamp_header)
+    output_image.header.update(scamp_header)
+    output_image.wcs = astropy.wcs.WCS(output_image.header)
 
-    #TODO cant write without this, scamp value does not work with fitsio
-    output_image.header["COMMENT"] = "No comment"
-    output_image.header["HISTORY"] = "NO HISTORY"
     try:
         output_image.write(output, overwrite='True')
     except OSError as err:
         print(err, "writing output failed")
 
     return output_image, scamp_data, sextractor_data
-
-
-# todo move everything below to testcase
-image_paths = [
-    'NCAc070865.fits',
-    'NCAc070866.fits',
-    'NCAc070867.fits',
-    'NCAc070868.fits',
-    'NCAc070869.fits',
-    'NCAc070870.fits',
-    'NCAc070871.fits',
-    'NCAc070872.fits',
-    'NCAc070873.fits',
-    'NCAc070874.fits',
-    'NCAc070875.fits',
-    'NCAc070876.fits',
-    'NCAc070877.fits',
-    'NCAc070878.fits',
-    'NCAc070879.fits',
-    'NCAc070880.fits',
-    'NCAc070881.fits',
-    'NCAc070882.fits',
-    'NCAc070883.fits',
-    'NCAc070884.fits',
-    'NCAc070885.fits',
-    'NCAc070886.fits',
-    'NCAc070887.fits',
-    'NCAc070888.fits',
-    'NCAc070889.fits',
-    'NCAc070890.fits',
-    'NCAc070891.fits'
-]
-flat_paths = ['FlatK.fits', 'FlatJ.fits', 'FlatH.fits']
-bad_paths = ['bad_cold5.fits', 'bad_zero_sci.fits', 'bad_hot2.fits']
-
-
-
-# if __name__ == '__main__':
-#     images = [astropy.nddata.CCDData.read(image) for image in image_paths]
-#     flats = [astropy.nddata.CCDData.read(image) for image in flat_paths]
-#     bads = [astropy.nddata.CCDData.read(image) for image in bad_paths]
-#     bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads))  # combine bad pixel masks
-#
-#     read_files = read_and_sort(bad_paths, flat_paths, image_paths)
-#
-#     processed = standard_process(read_files['J'].bad, read_files['J'].flat[0], read_files['J'].images)
-#     skyscaled = skyscale(processed, 'subtract')
-#     wcs = skyscaled[0].wcs
-#     reprojected = [ccdproc.wcs_project(img, wcs) for img in skyscaled]
-#     output = ccdproc.Combiner(reprojected).median_combine()
-#     try:
-#         output.write('pythonTestOut.fits')
-#     except OSError as err:
-#         print(err, "...ignoring")

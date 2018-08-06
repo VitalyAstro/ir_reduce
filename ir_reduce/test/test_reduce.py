@@ -3,14 +3,15 @@ import pytest
 from astropy.nddata.ccddata import CCDData
 from astropy import units as u
 import warnings
+import glob
 from numpy import array, zeros, ones, float64, int64, s_
 import numpy as np
-
-from ..ir_reduce import standard_process, skyscale, interpolate
+import os
+from ..ir_reduce import standard_process, skyscale, interpolate, read_and_sort, do_everything
+import tempfile
 
 # Setup
 image_size = (10, 10)
-
 
 @pytest.fixture(params=[
     zeros(image_size, dtype=float64),
@@ -63,3 +64,37 @@ def test_interpolate():
     assert np.isclose(ccdCorr.data[5, 5], 10)
 
 # test for copying behaviour of function chain
+
+@pytest.mark.integration
+@pytest.mark.filterwarnings('ignore::astropy.wcs.FITSFixedWarning')
+def test_read_and_sort():
+    testdir = os.path.abspath("../testdata")
+    assert os.path.isdir(testdir), testdir + " does not exist"
+
+    bads = glob.glob(testdir+"/bad*.fits")
+    flats = glob.glob(testdir+"/Flat*.fits")
+    imgs = glob.glob(testdir+"/NCA*.fits")
+    read = read_and_sort(bads, flats, imgs)
+    assert read['J'].bad
+    assert read['J'].flat
+    assert len(read['J'].images) > 0
+    assert read['H']
+    assert read['Ks']
+
+@pytest.mark.integration
+@pytest.mark.filterwarnings('ignore::astropy.wcs.FITSFixedWarning')
+def test_do_everything():
+    testdir = os.path.abspath("../testdata")
+    assert os.path.isdir(testdir), testdir + " does not exist"
+
+    bads = glob.glob(testdir+"/bad*.fits")
+    flats = glob.glob(testdir+"/Flat*.fits")
+    imgs = glob.glob(testdir+"/NCA*.fits")
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        image, scamp, sextractor = do_everything(bads, flats, imgs, os.path.join(tmpdir, "testout_standard.fits"))
+
+        assert image
+        assert scamp
+        assert sextractor
+
