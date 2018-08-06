@@ -3,6 +3,7 @@ setup.py: What pip/easy\_install etc. uses to install the package
 MANIFEST: Which files will also be included in the package
 default.conv, sextractor.conf, scamp.conf, default.param: Config files for SExtractor and Scamp
 tox.ini: config file for tox
+conftest.py: add option to pytest to run integration/end-to-end tests that depend on testdata and are slow with --runintegration
 
 pytest: Finds everything that looks like a test case and runs it
 

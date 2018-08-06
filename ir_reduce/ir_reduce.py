@@ -230,7 +230,7 @@ def do_everything(bads: Iterable[str],
     :param bads: list of paths to bad pixel frames
     :param flats: list of paths to flat frames
     :param exposures: list of paths to images
-    :param output: Path to write output image to #TODO make this optional -> no output?
+    :param output: Path to write output image to. No output if false-y
     :param filter: which spectral band to look at
     :param combine: either 'median' or 'average'
     :param skyscale_method: either 'subtract' or 'divide'
@@ -252,24 +252,34 @@ def do_everything(bads: Iterable[str],
     # TODO align to this if register True
     output_image = ccdproc.Combiner(reprojected).median_combine()
     output_image.wcs = wcs
+    # WTF is ccdproc.Combiner not giving back a
+    # astropy.fits.io.Header object but an ordered dict?
+    output_image.header = astropy.io.fits.header.Header(output_image.header)
 
     first_hdu = output_image.to_hdu()[0]
     scamp_input = CCDData(first_hdu.data, header=first_hdu.header, unit=first_hdu.header['bunit'])
 
     scamp_data, sextractor_data = run_scamp(scamp_input)
 
-    with open(output + 'scamp.head', 'w') as f:
-        f.write(scamp_data)
-    with open(output + 'sextractor.fits', 'wb') as f:
-        f.write(sextractor_data)
+
 
     scamp_header = fits.Header.fromstring(scamp_data, sep='\n')
-    output_image.header.update(scamp_header)
-    output_image.wcs = astropy.wcs.WCS(output_image.header)
+    for entry in scamp_header.copy():
+        # PV?_? entries are not handled well by wcslib and by extension astropy
+        if entry.startswith('PV'):
+            scamp_header.pop(entry)
 
-    try:
-        output_image.write(output, overwrite='True')
-    except OSError as err:
-        print(err, "writing output failed")
+    output_image.header.update(scamp_header)
+    output_image.wcs = astropy.wcs.WCS(scamp_header)
+
+    if output:
+        with open(output + 'scamp.head', 'w') as f:
+            f.write(scamp_data)
+        with open(output + 'sextractor.fits', 'wb') as f:
+            f.write(sextractor_data)
+        try:
+            output_image.write(output, overwrite='True')
+        except OSError as err:
+            print(err, "writing output failed")
 
     return output_image, scamp_data, sextractor_data

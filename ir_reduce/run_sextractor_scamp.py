@@ -124,7 +124,8 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
     if not is_config_valid(config):
         raise ValueError()
 
-    working_dir = working_dir if working_dir else tempfile.TemporaryDirectory().name # gets deleted automatically
+    tmpdir_pin = tempfile.TemporaryDirectory()
+    working_dir = working_dir if working_dir else tmpdir_pin.name  # gets deleted automatically
     shutil.copy(config.sextractor_param, working_dir)
     open('default.conv', 'a').close()  # touch #TODO make configurable? Convolves image in sextractor with filter
 
