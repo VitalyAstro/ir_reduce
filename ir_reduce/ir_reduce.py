@@ -11,7 +11,7 @@ import astropy.io.fits as fits
 import ccdproc
 from astropy.stats import SigmaClip
 from astropy.io import fits
-from .image_discovery import Paths # TODO naming is a little weird
+from .image_discovery import Paths  # TODO naming is a little weird
 from .run_sextractor_scamp import run_astroref as run_scamp
 
 from functools import reduce  # TODO meh, maybe rename this file then...
@@ -95,6 +95,7 @@ def standard_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) 
         reduceds.append(reduced)
     return reduceds
 
+
 def tiled_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) -> List[CCDData]:
     """
     Do the ccdproc operation on a list of images. includes some extra logic for NOTCAM images to get the
@@ -111,27 +112,28 @@ def tiled_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) -> 
         image.mask = bad
         # Tiling: http://www.not.iac.es/instruments/notcam/guide/observe.html#reductions
         # 0-> LL, 1->LR, 2->UR, 3->UL
-        tile_table = [None, s_[512:,0:512], s_[512:,512:], s_[0:512,512:], s_[0:512,0:512]]
+        tile_table = [None, s_[512:, 0:512], s_[512:, 512:], s_[0:512, 512:], s_[0:512, 0:512]]
         reduced = image.copy()
 
         for idx in range(1, 5):
-            gain = image.header['GAIN'+str(idx)]
-            readnoise = image.header['RDNOISE'+str(idx)]
+            gain = image.header['GAIN' + str(idx)]
+            readnoise = image.header['RDNOISE' + str(idx)]
             tile = ccdproc.ccd_process(image,
-                                          oscan=None,
-                                          error=True,
-                                          gain=gain * u.electron / u.count,
-                                          # TODO check if this is right or counts->adu required
-                                          readnoise=readnoise * u.electron,
-                                          dark_frame=None,
-                                          master_flat=flat,
-                                          bad_pixel_mask=bad)
+                                       oscan=None,
+                                       error=True,
+                                       gain=gain * u.electron / u.count,
+                                       # TODO check if this is right or counts->adu required
+                                       readnoise=readnoise * u.electron,
+                                       dark_frame=None,
+                                       master_flat=flat,
+                                       bad_pixel_mask=bad)
             image.data[tile_table[idx]] = tile.data[tile_table[idx]]
             reduced.header = tile.header
             reduced.wcs = tile.wcs
             reduced.unit = tile.unit
         reduceds.append(reduced)
     return reduceds
+
 
 def skyscale(image_list: Iterable[CCDData], method: str = 'subtract',
              cut: Tuple[Union[slice, int]] = s_[200:800, 200:800]) -> List[CCDData]:
@@ -164,7 +166,7 @@ def skyscale(image_list: Iterable[CCDData], method: str = 'subtract',
     return ret
 
 
-def fixPix(im, mask):
+def fix_pix(im, mask):
     import scipy.ndimage as ndimage
     """
     taken from https://www.iaa.csic.es/~jmiguel/PANIC/PAPI/html/_modules/reduce/calBPM.html#fixPix 
@@ -215,7 +217,7 @@ def fixPix(im, mask):
         y0, y1 = y[i].min(), y[i].max() + 1
         subim = im[y0: y1, x0: x1]
         submask = mask[y0: y1, x0: x1]
-        subgood = (submask == False)
+        subgood = (not submask)
 
         cleaned[i * mask] = subim[subgood].mean()
 
@@ -237,11 +239,12 @@ def interpolate(img: CCDData, dofixpix=False):
 
     if dofixpix:
         print("begin fixpix")
-        img.data = fixPix(img.data, img.mask)
+        img.data = fix_pix(img.data, img.mask)
         print("end fixpix")
     else:
         # TODO this here doesn't really work all that well -> extended regions cause artifacts at border
         kernel_array = np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]]) / 9  # average of all surrounding pixels
+        # noinspection PyTypeChecker #for some reason astropy used "array.py", but it's a numpy array
         kernel = CustomKernel(
             kernel_array)  # TODO the original pipeline used fixpix, which says it uses linear interpolation
 
@@ -255,7 +258,7 @@ def do_everything(bads: Iterable[str],
                   flats: Iterable[str],
                   images: Iterable[str],
                   output: str,
-                  filter: str = 'J',  # TODO: allow 'all'
+                  filter_letter: str = 'J',  # TODO: allow 'all'
                   combine: str = 'median',
                   skyscale_method: str = 'subtract',
                   register: bool = False,
@@ -266,9 +269,9 @@ def do_everything(bads: Iterable[str],
     to write an output filec
     :param bads: list of paths to bad pixel frames
     :param flats: list of paths to flat frames
-    :param exposures: list of paths to images
+    :param images: list of paths to images
     :param output: Path to write output image to. No output if false-y
-    :param filter: which spectral band to look at
+    :param filter_letter: which spectral band to look at
     :param combine: either 'median' or 'average'
     :param skyscale_method: either 'subtract' or 'divide'
     :param register: use cross correlation to overlay images more accurately
@@ -276,8 +279,8 @@ def do_everything(bads: Iterable[str],
     :param force: Try and ignore errors
     :return: (combined_output, scamp_output, sextractor_output)
     """
-    assert (filter in filter_vals)
-    read_files = read_and_sort(bads, flats, images)[filter]
+    assert (filter_letter in filter_vals)
+    read_files = read_and_sort(bads, flats, images)[filter_letter]
     # TODO distortion correct
     processed = standard_process(read_files.bad, read_files.flat[0], read_files.images)
     skyscaled = skyscale(processed, skyscale_method)
@@ -293,13 +296,11 @@ def do_everything(bads: Iterable[str],
     # astropy.fits.io.Header object but an ordered dict?
     output_image.header = astropy.io.fits.header.Header(output_image.header)
 
-    #TODO why this?
+    # TODO why this?
     first_hdu = output_image.to_hdu()[0]
     scamp_input = CCDData(first_hdu.data, header=first_hdu.header, unit=first_hdu.header['bunit'])
 
     scamp_data, sextractor_data = run_scamp(scamp_input)
-
-
 
     scamp_header = fits.Header.fromstring(scamp_data, sep='\n')
     for entry in scamp_header.copy():

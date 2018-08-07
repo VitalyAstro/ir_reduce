@@ -2,12 +2,9 @@ import pytest
 from textwrap import dedent
 import tempfile
 from unittest import mock
-from unittest.mock import mock_open
 import os
 import shutil
-from .. import run_astroref, astroref_file, astroreff_all, parse_key_val_config, is_config_valid, Config
-from .. import sp
-
+from .. import run_astroref, parse_key_val_config, is_config_valid, Config # todo: astroref_file, astroreff_files
 
 class ConfigForTest:
     """Offers a context manager that fills a config with empty tempfiles and deletes them after execution"""
@@ -21,14 +18,14 @@ class ConfigForTest:
         config.scamp_config = self.scamp_filename
         self.config = config
 
-        with open(config.sextractor_config , 'w') as f:
+        with open(config.sextractor_config, 'w') as f:
             f.write(dedent('''
             CATALOG_TYPE FITS_LDAC
             CATALOG_NAME sexout.fits 
             HEADER_SUFFIX .head
             '''))
 
-        with open(config.scamp_config , 'w') as f:
+        with open(config.scamp_config, 'w') as f:
             f.write(dedent('''
             CATALOG_NAME sexout.fits
             '''))
@@ -40,14 +37,16 @@ class ConfigForTest:
         os.remove(self.sex_filename)
         os.remove(self.scamp_filename)
 
+
 def recorder(*args, **kwargs):
     return args, kwargs
+
 
 @pytest.mark.incremental
 class TestRun:
 
     def test_parse_key_val_config(self, capsys):
-        teststring=dedent("""         
+        teststring = dedent("""         
           AHEADER_SUFFIX         .ahead          # Filename extension for additional
                                                  # input headers
           HEADER_SUFFIX   \t      .head           # Filename extension for output headers
@@ -71,10 +70,9 @@ class TestRun:
         assert data['CHECKPLOT_DEV'] == 'PNG'
 
         data = parse_key_val_config(badstring)
+        assert not data
         captured = capsys.readouterr()
         assert 'Got ambiguous line' in captured.out
-
-
 
     def test_config_valid(self):
         with ConfigForTest() as valid_config:
@@ -108,8 +106,6 @@ class TestRun:
                 '''))
             assert not is_config_valid(invalid_config)
 
-
-
     def test_run_with_fake_subprocess(self):
         mock_run = mock.Mock()
         mock_process = mock.Mock
@@ -131,11 +127,10 @@ class TestRun:
     def test_echo_present(self):
         assert shutil.which('echo')
 
-    @pytest.mark.integration #TODO mark for "need echo present"
+    @pytest.mark.integration  # TODO mark for "need echo present"
     def test_run_with_fake_binaries(self):
         pass
 
-    @pytest.mark.integration #TODO not sure if this is the right mark for network acces+Data needed
+    @pytest.mark.integration  # TODO not sure if this is the right mark for network access+testdata needed
     def test_run_with_real_binaries(self):
         pass
-

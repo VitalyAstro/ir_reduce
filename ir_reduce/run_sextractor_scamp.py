@@ -6,7 +6,7 @@ from astropy.nddata.ccddata import CCDData
 import astropy.io.fits as fits
 import sys
 import shutil
-import logging
+
 """
 Throughout this file: sex->SourceExtractor
 """
@@ -16,7 +16,11 @@ this_dir, this_file = os.path.split(__file__)
 class Config:
     """
     a helper class to bundle parameters for scamp/sextractor
+
+    TODO: maybe allow to override parameters from the config files here with an "additional params"-entry
+    and pass them like "sex -MYPARAM MYVAL"
     """
+
     def __init__(self):
         self.sextractor_param = os.path.join(this_dir, 'default.param')
         self.sextractor_config = os.path.join(this_dir, 'sex.config')
@@ -30,21 +34,23 @@ class Config:
         return Config()
 
 
-def astroreff_all(inputFiles: List[str]) -> None:
+def astroreff_files(input_files: List[str], config: Config = Config.default()) -> None:
     """
-
-    :param inputFiles:
-    :return:
+    Runs SExtractor and scamp on the given files to astroreference
+    :param input_files: List of files to astroreference
+    :param config: configuration object for scamp/sextractor
+    :return: None, will write header/wcs to files
     """
-    for file in inputFiles:
-        astroref_file(file, file + '_astroreff')
+    for file in input_files:
+        astroref_file(file, file + '_astroreff', config=config)
 
 
-def astroref_file(input_path: str, output_path: str) -> str:
+def astroref_file(input_path: str, output_path: str, config: Config = Config.default()) -> str:
     """
 
     :param input_path:
     :param output_path:
+    :param config: configuration object for scamp/sextractor
     :return:
     """
     input_path = os.path.abspath(input_path)
@@ -53,7 +59,7 @@ def astroref_file(input_path: str, output_path: str) -> str:
 
     input_data = CCDData.read(input_path)
 
-    scamp_data, sextractor_data = run_astroref(input_data)
+    scamp_data, sextractor_data = run_astroref(input_data, config=config)
 
     with open(ouput_path + 'scamp.head', 'w') as f:
         f.write(scamp_data)
@@ -71,14 +77,14 @@ def astroref_file(input_path: str, output_path: str) -> str:
     return scamp_data
 
 
-def parse_key_val_config(input: str) -> Dict[str,str]:
+def parse_key_val_config(config: str) -> Dict[str, str]:
     """
-    :param input:
-    :return:
+    :param config: configuration object to validate
+    :return: True if valid, false otherwise
     """
     import re
-    lines = input.splitlines()
-    lines = [re.sub(r'#.*', '', line) for line in lines] # get rid of everything after '#'
+    lines = config.splitlines()
+    lines = [re.sub(r'#.*', '', line) for line in lines]  # get rid of everything after '#'
     ret = dict()
     for line in lines:
         if line.strip() == '':
@@ -93,24 +99,25 @@ def parse_key_val_config(input: str) -> Dict[str,str]:
                 raise
     return ret
 
+
 def is_config_valid(config: Config) -> bool:
     """
-    TODO: Verify that the IO-parameters in the config files of scamp and sextractor fit together
-
+    This function verifies that a config object is valid/sensible
     """
     with open(config.sextractor_config) as f:
         sex_cfg = parse_key_val_config(f.read())
-    with open(config.scamp_config) as f:
-        scamp_cfg = parse_key_val_config(f.read())
+    # with open(config.scamp_config) as f: # don't need this yet
+    #    scamp_cfg = parse_key_val_config(f.read())
 
-    valid = config.sextractor_outfile == sex_cfg['CATALOG_NAME'] and\
-            sex_cfg['CATALOG_TYPE'] == 'FITS_LDAC' and\
+    valid = config.sextractor_outfile == sex_cfg['CATALOG_NAME'] and \
+            sex_cfg['CATALOG_TYPE'] == 'FITS_LDAC' and \
             sex_cfg['HEADER_SUFFIX'] == '.head'
 
     return valid
 
 
-def run_astroref(input_data: Union[str, CCDData], config: Config = Config.default(), working_dir: str = '', verbose: int = 1) -> Tuple[str, bytes]:
+def run_astroref(input_data: Union[str, CCDData], config: Config = Config.default(), working_dir: str = '',
+                 verbose: int = 1) -> Tuple[str, bytes]:
     """
     TODO maybe wrapper that writes out strings and CCDData to files so that this function can only work with FS data
 
@@ -135,7 +142,8 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
     else:
         fname = os.path.abspath(input_data)
 
-    sex_process = sp.run([config.sex_cmd, fname, '-c', config.sextractor_config], cwd=working_dir, stdout=sp.PIPE, stderr=sp.PIPE,
+    sex_process = sp.run([config.sex_cmd, fname, '-c', config.sextractor_config], cwd=working_dir, stdout=sp.PIPE,
+                         stderr=sp.PIPE,
                          universal_newlines=True, timeout=30)
     if sex_process.returncode != 0:
         raise RuntimeError(
@@ -150,7 +158,8 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
         print(sex_process.stdout)
         print(sex_process.stderr, file=sys.stdout)
 
-    scamp_process = sp.run([config.scamp_cmd, config.sextractor_outfile , '-c', config.scamp_config], cwd=working_dir, stdout=sp.PIPE, stderr=sp.PIPE,
+    scamp_process = sp.run([config.scamp_cmd, config.sextractor_outfile, '-c', config.scamp_config], cwd=working_dir,
+                           stdout=sp.PIPE, stderr=sp.PIPE,
                            universal_newlines=True, timeout=30)
     if scamp_process.returncode != 0:
         raise RuntimeError(
@@ -172,6 +181,5 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
         scamp_data = scamp_outfile.read()
     with open(os.path.join(working_dir, config.sextractor_outfile), 'rb') as f:
         sextractor_data = f.read()
-
 
     return scamp_data, sextractor_data

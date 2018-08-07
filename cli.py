@@ -18,7 +18,7 @@ def call_reduce(bads: Iterable[str],
                 flags: argparse.Namespace) -> None:
     ir_reduce.do_everything(bads, flats, images,
                             output=flags.output,
-                            filter=flags.filter[0],
+                            filter_letter=flags.filter[0],
                             combine='average' if flags.average else 'median',
                             skyscale_method='subtract' if flags.subtract else 'divide',
                             register=flags.register_images,
