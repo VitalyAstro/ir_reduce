@@ -9,6 +9,8 @@ read = ir_reduce.read_and_sort(glob.glob('../testdata/bad*.fits'),
                         glob.glob('../testdata/NCA*.fits'))
 
 processed = ir_reduce.tiled_process(read['J'].bad, read['J'].flat[0], read['J'].images)
+#processed = ir_reduce.standard_process(read['J'].bad, read['J'].flat[0], read['J'].images)
+
 skyscaled = ir_reduce.skyscale(processed, 'subtract')
 
 interpolated = [ir_reduce.interpolate(image, dofixpix=True) for image in skyscaled]
