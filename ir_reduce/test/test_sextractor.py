@@ -4,7 +4,8 @@ import tempfile
 from unittest import mock
 import os
 import shutil
-from .. import run_astroref, parse_key_val_config, is_config_valid, Config # todo: astroref_file, astroreff_files
+from .. import run_astroref, parse_key_val_config, is_config_valid, Config  # todo: astroref_file, astroreff_files
+
 
 class ConfigForTest:
     """Offers a context manager that fills a config with empty tempfiles and deletes them after execution"""
@@ -83,7 +84,7 @@ class TestRun:
             with open(invalid_config.sextractor_config, 'w') as f:
                 f.write(dedent('''
                 CATALOG_TYPE FITS_LDAC
-                CATALOG_NAME sexout.fits 
+                CATALOG_NAME sexout.fits
                 HEADER_SUFFIX .head
                 '''))
             assert not is_config_valid(invalid_config)
@@ -92,7 +93,7 @@ class TestRun:
             with open(invalid_config.sextractor_config, 'w') as f:
                 f.write(dedent('''
                 CATALOG_TYPE FITS_LDAC
-                CATALOG_NAME sexout.fits 
+                CATALOG_NAME sexout.fits
                 HEADER_SUFFIX .Not_head
                 '''))
             assert not is_config_valid(invalid_config)

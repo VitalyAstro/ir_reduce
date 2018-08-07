@@ -11,10 +11,10 @@ import astropy.io.fits as fits
 import ccdproc
 from astropy.stats import SigmaClip
 from astropy.io import fits
-from .image_discovery import Paths  # TODO naming is a little weird
+from .image_discovery import ImageGroup
 from .run_sextractor_scamp import run_astroref as run_scamp
 
-from functools import reduce  # TODO meh, maybe rename this file then...
+from functools import reduce
 
 from typing import List, Tuple, Iterable, Set, Union, Any, Dict
 from numpy import s_  # numpy helper to create slices by indexing this
@@ -27,7 +27,7 @@ image_category = 'IMAGECAT'
 object_ID = 'OBJECT'
 
 
-def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable[str]) -> Dict[str, Paths]:
+def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable[str]) -> Dict[str, ImageGroup]:
     """
     read in images and sort them by filter, return the CCDDatas
 
@@ -59,12 +59,11 @@ def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable
             raise err
 
         # bad pixel maps are valid, no matter the filter
-        ret[filter_id] = Paths(bad_datas, flats_with_filter, images_with_filter)
+        ret[filter_id] = ImageGroup(bad_datas, flats_with_filter, images_with_filter)
 
     return ret
 
 
-# TODO standard_process(bads,flats,images) -> List[CCDData]
 def standard_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) -> List[CCDData]:
     """
     Do the ccdproc operation on a list of images. includes some extra logic for NOTCAM images to get the
@@ -110,6 +109,7 @@ def tiled_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) -> 
     reduceds = []
     for image in images:
         image.mask = bad
+        # TODO this is really sketchy as it does 4x the work
         # Tiling: http://www.not.iac.es/instruments/notcam/guide/observe.html#reductions
         # 0-> LL, 1->LR, 2->UR, 3->UL
         tile_table = [None, s_[512:, 0:512], s_[512:, 512:], s_[0:512, 512:], s_[0:512, 0:512]]
@@ -148,7 +148,7 @@ def skyscale(image_list: Iterable[CCDData], method: str = 'subtract',
     filtered_data = [sigma_clip(image.data) for image in image_list]
 
     medians = np.array([np.median(data[cut]) for data in filtered_data])
-    airmass = sum((image.header['AIRMASS'] for image in image_list))  # TODO needed?
+    #airmass = sum((image.header['AIRMASS'] for image in image_list))  # TODO needed?
 
     # TODO from original code:
     # Calculate scaling relatively to last image median
@@ -166,7 +166,9 @@ def skyscale(image_list: Iterable[CCDData], method: str = 'subtract',
     return ret
 
 
-def fix_pix(im, mask):
+def fix_pix(img: CCDData) -> CCDData:
+    im = img.data
+    mask = img.mask
     import scipy.ndimage as ndimage
     """
     taken from https://www.iaa.csic.es/~jmiguel/PANIC/PAPI/html/_modules/reduce/calBPM.html#fixPix 
@@ -217,16 +219,17 @@ def fix_pix(im, mask):
         y0, y1 = y[i].min(), y[i].max() + 1
         subim = im[y0: y1, x0: x1]
         submask = mask[y0: y1, x0: x1]
-        subgood = (not submask)
+        subgood = (submask == False)
 
         cleaned[i * mask] = subim[subgood].mean()
 
-    return cleaned
+    img.data = cleaned
+    return img
 
 
-def interpolate(img: CCDData, dofixpix=False):
+def interpolate(img: CCDData):
     """
-    Takes a image with a mask for bad pixels and interpolate over the bad pixels
+    Takes a image with a mask for bad pixels and interpolates over the bad pixels
 
     :param img: the image you want to interpolate bad pixels in
     :param dofixpix: use the fixpix-algorithm?
@@ -237,19 +240,14 @@ def interpolate(img: CCDData, dofixpix=False):
     from astropy.convolution import CustomKernel
     from astropy.convolution import interpolate_replace_nans
 
-    if dofixpix:
-        print("begin fixpix")
-        img.data = fix_pix(img.data, img.mask)
-        print("end fixpix")
-    else:
-        # TODO this here doesn't really work all that well -> extended regions cause artifacts at border
-        kernel_array = np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]]) / 9  # average of all surrounding pixels
-        # noinspection PyTypeChecker #for some reason astropy used "array.py", but it's a numpy array
-        kernel = CustomKernel(
-            kernel_array)  # TODO the original pipeline used fixpix, which says it uses linear interpolation
+    # TODO this here doesn't really work all that well -> extended regions cause artifacts at border
+    kernel_array = np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]]) / 9  # average of all surrounding pixels
+    # noinspection PyTypeChecker
+    kernel = CustomKernel(
+        kernel_array)  # TODO the original pipeline used fixpix, which says it uses linear interpolation
 
-        img.data[np.logical_not(img.mask)] = np.NaN
-        img.data = interpolate_replace_nans(img.data, kernel)
+    img.data[np.logical_not(img.mask)] = np.NaN
+    img.data = interpolate_replace_nans(img.data, kernel)
 
     return img
 
@@ -257,13 +255,10 @@ def interpolate(img: CCDData, dofixpix=False):
 def do_everything(bads: Iterable[str],
                   flats: Iterable[str],
                   images: Iterable[str],
-                  output: str,
+                  output: Union[str, bool],
                   filter_letter: str = 'J',  # TODO: allow 'all'
                   combine: str = 'median',
-                  skyscale_method: str = 'subtract',
-                  register: bool = False,
-                  verbosity: int = 0,
-                  force: bool = False) -> Tuple[CCDData, str, bytes]:
+                  skyscale_method: str = 'subtract') -> Tuple[CCDData, str, bytes]:
     """
     Take a list of files for badPixel, flatfield and exposures + a bunch of processing parameters and reduce them
     to write an output filec
@@ -274,37 +269,44 @@ def do_everything(bads: Iterable[str],
     :param filter_letter: which spectral band to look at
     :param combine: either 'median' or 'average'
     :param skyscale_method: either 'subtract' or 'divide'
-    :param register: use cross correlation to overlay images more accurately
-    :param verbosity: How talkative are we today?
-    :param force: Try and ignore errors
     :return: (combined_output, scamp_output, sextractor_output)
     """
+    # TODO the images this spits out are not quite
+
     assert (filter_letter in filter_vals)
     read_files = read_and_sort(bads, flats, images)[filter_letter]
-    # TODO distortion correct
+
+    # TODO distortion correct here
+
+    # Perform basic reduction operations
     processed = standard_process(read_files.bad, read_files.flat[0], read_files.images)
     skyscaled = skyscale(processed, skyscale_method)
+    fixed = [fix_pix(image) for image in skyscaled]
 
-    interpolated = [interpolate(image, dofixpix=True) for image in skyscaled]
+    # Reproject everything to the world-coordinate system of the first image
+    wcs = fixed[0].wcs
+    reprojected = [ccdproc.wcs_project(img, wcs) for img in fixed]
 
-    wcs = interpolated[0].wcs
-    reprojected = [ccdproc.wcs_project(img, wcs) for img in interpolated]
-    # TODO align to this if register True
-    output_image = ccdproc.Combiner(reprojected).median_combine()
+    # TODO option to align with cross correlation (see image_registration)
+
+    # overlay images
+    combiner = ccdproc.Combiner(reprojected)
+    output_image = combiner.median_combine() if combine == 'median' else combiner.average_combine()
+    # WTF. ccdproc.Combiner is not giving back good metadata.
+    # need to set WCS manually agai and convert header to astropy.fits.io.Header object from an ordered dict
+    # not replacing this can cause weird errors during file writing/wcs conversion
     output_image.wcs = wcs
-    # WTF is ccdproc.Combiner not giving back a
-    # astropy.fits.io.Header object but an ordered dict?
     output_image.header = astropy.io.fits.header.Header(output_image.header)
 
-    # TODO why this?
+    # The output has 3 hdus: image and error/mask. This confuses scamp, so only take the image to feed it to scamp
     first_hdu = output_image.to_hdu()[0]
     scamp_input = CCDData(first_hdu.data, header=first_hdu.header, unit=first_hdu.header['bunit'])
-
     scamp_data, sextractor_data = run_scamp(scamp_input)
 
+    # PV?_? (distortion) entries are not handled well by wcslib and by extension astropy.
+    # just Remove them as a workaround
     scamp_header = fits.Header.fromstring(scamp_data, sep='\n')
     for entry in scamp_header.copy():
-        # PV?_? entries are not handled well by wcslib and by extension astropy
         if entry.startswith('PV'):
             scamp_header.pop(entry)
 
