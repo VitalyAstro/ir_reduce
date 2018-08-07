@@ -5,7 +5,7 @@ Recommended:
 pytest, tox, sphinx, coverage
 
 ## Installation
-As this tool is still likely, buggy installation is recommended with
+As this tool is still likely buggy, installation is recommended with
 
 `pip install -e /path/to/ir_reduce`
 or

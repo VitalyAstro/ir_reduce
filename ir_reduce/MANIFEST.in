@@ -2,11 +2,12 @@ include *.md
 
 include LICENSE
 
-include *.conf  
-include *.config
-include *.conv
-include *.db
-include *.param
+include ir_reduce/*.conf  
+include ir_reduce/*.config
+include ir_reduce/*.conv
+include ir_reduce/*.db
+include ir_reduce/*.param
+include ir_reduce/*.py
 include *.py
 
 recursive-include docs *.py

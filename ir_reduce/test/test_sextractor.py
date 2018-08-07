@@ -4,7 +4,7 @@ import tempfile
 from unittest import mock
 import os
 import shutil
-from .. import run_astroref, parse_key_val_config, is_config_valid, Config  # todo: astroref_file, astroreff_files
+from ir_reduce import run_astroref, parse_key_val_config, is_config_valid, Config  # todo: astroref_file, astroreff_files
 
 
 class ConfigForTest:

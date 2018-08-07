@@ -7,7 +7,7 @@ import glob
 from numpy import array, zeros, ones, float64, int64, s_
 import numpy as np
 import os
-from ..ir_reduce import standard_process, skyscale, interpolate, read_and_sort, do_everything
+from ir_reduce import standard_process, skyscale, interpolate, read_and_sort, do_everything
 import tempfile
 
 # Setup

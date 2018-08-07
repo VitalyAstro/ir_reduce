@@ -20,10 +20,10 @@ def call_reduce(bads: Iterable[str],
                             output=flags.output,
                             filter_letter=flags.filter[0],
                             combine='average' if flags.average else 'median',
-                            skyscale_method='subtract' if flags.subtract else 'divide',
-                            register=flags.register_images,
-                            verbosity=flags.verbose,
-                            force=flags.force)
+                            skyscale_method='subtract' if flags.subtract else 'divide')
+                            #register=flags.register_images,
+                            #verbosity=flags.verbose,
+                            #force=flags.force)
 
 
 def do_manual(args: argparse.Namespace):
@@ -69,7 +69,7 @@ parser.add_argument('--force', '--javascript', action='store_true',
 parser.add_argument('output', nargs='?', type=str, default='reduced.fits',
                         help='output file to write to, default: reduced.fits')
 
-parser.add_argument('--verbose', '-v', action='count', default=0)
+parser.add_argument('--verbose', '-v', action='count', default=0, help='No effect yet')
 parser.add_argument('--version', action='version', version=VERSION)
 
 parser.set_defaults(func=do_nothing)
@@ -91,6 +91,9 @@ sub_parser.add_argument('folder', nargs='?', type=str, default=os.getcwd(),
 sub_parser.add_argument('-c', '--confirm', action='store_true', help='Confirm file selection')
 sub_parser.set_defaults(func=do_discover)
 
-args = parser.parse_args()
-print(args)
-args.func(args)
+def cli_main():
+    args = parser.parse_args()
+    args.func(args)
+
+if __name__=="main":
+    cli_main()
