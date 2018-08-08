@@ -16,14 +16,14 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://krachyon.de/git/reduce/",
     packages=setuptools.find_packages(),
-    classifiers=(
+    classifiers=[
         "Programming Language :: Python :: 3.6",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering :: Astronomy",
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Science/Research"
-    ),
+    ],
     keywords='astronomy infrared ccd reduction photometry',
     python_requires='>=3.6',
     install_requires=['astropy>=3', 'numpy>1.14', 'ccdproc>=1.3.0', 'pytest', 'tox', 'sphinx'],

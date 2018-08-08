@@ -48,6 +48,16 @@ For them to work scamp and SExtractor must be installed, available as `scamp` an
 that contains the "NCA*.fits" exposures "Flat[HJK].fits" and "bad_*.fits" bad pixel maps
 
 ## Some example usages
+### using the CLI
+the cli is installed as a script called "ir-reduce-cli". You can also run ir\_reduce/cli.py. Supports --help
+
+specify bad/flat/exposures manually:
+`ir-reduce-cli output.fits manual -f Flat* -b bad_* -e MYImages*.fits`
+
+`manual` can be shortened to `m`. Discovery mode is still rather broken 
+
+
+### Usage from python
 run tests: `pytest`
 
 run tests with testdata/network access: `ir_reduce$ pytest --runintegration` (testdata-directory must be present in parent dir)
@@ -57,7 +67,7 @@ run tests, linter, doc-build and coverage in isolated environment: `tox`
 run documentation build:
 `cd docs; make html`
 
-use the module (see also run_defaults in parent directory)
+use the module (see also run\_defaults in parent directory)
 ```import ir_reduce
 
 #
