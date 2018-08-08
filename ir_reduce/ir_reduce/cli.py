@@ -27,6 +27,24 @@ def call_reduce(bads: Iterable[str],
 
 
 def do_manual(args: argparse.Namespace):
+    # slightly hacky way to implement @list syntax
+    if any('@' in exp for exp in args.exposures):
+        if not len(args.exposures) == 1:
+            raise ValueError('When using @listfile syntax, you must specify exactly one argument for exposures')
+        with open(args.exposures[0].replace('@', ''), 'r') as f:
+            # remove whitespaces, empty lines and '#' comments
+            args.exposures = [i.strip() for i in f.readlines() if i.strip() and not i.strip().startswith('#')]
+    if any('@' in bad for bad in args.bad):
+        if not len(args.bad) == 1:
+            raise ValueError('When using @listfile syntax, you must specify exactly one argument for bad-pixel maps')
+        with open(args.bad[0].replace('@', ''), 'r') as f:
+            args.bad = [i.strip() for i in f.readlines() if i.strip() and not i.strip().startswith('#')]
+    if any('@' in flat for flat in args.flat):
+        if not len(args.flat) == 1:
+            raise ValueError('When using @listfile syntax, you must specify exactly one argument for flat fields')
+        with open(args.flat[0].replace('@', ''), 'r') as f:
+            args.flat = [i.strip() for i in f.readlines() if i.strip() and not i.strip().startswith('#')]
+
     return call_reduce(args.bad, args.flat, args.exposures, args)
 
 
@@ -95,5 +113,5 @@ def cli_main():
     args = parser.parse_args()
     args.func(args)
 
-if __name__=="main":
+if __name__=="__main__":
     cli_main()
