@@ -96,11 +96,11 @@ subparsers = parser.add_subparsers(help='sub commands')
 
 sub_parser = subparsers.add_parser('manual', aliases=['m'], help='Specify paths to images yourself')
 sub_parser.add_argument('-f', '--flat', required=True, metavar='flatfield', nargs=1, type=str,
-                        help='Flat field image')
+                        help='Flat field image. Can specify in textfile and pass @textfile')
 sub_parser.add_argument('-b', '--bad', required=True, metavar='badPixelMap', nargs='+', type=str,
-                        help='bad pixel maps. Will be combined')
+                        help='bad pixel maps. Will be combined. Can specify in textfile and pass @textfile')
 sub_parser.add_argument('-e', '--exposures', required=True, metavar='image', nargs='+', type=str,
-                        help='the images you want to combine')
+                        help='the images you want to combine. Can specify in textfile and pass @textfile')
 sub_parser.set_defaults(func=do_manual)
 
 sub_parser = subparsers.add_parser('discover', aliases=['d'], help='Discover images in optionally specified directory')
