@@ -109,7 +109,7 @@ class TestRun:
 
     def test_run_with_fake_subprocess(self):
         mock_run = mock.Mock()
-        mock_process = mock.Mock
+        mock_process = mock.Mock  # this needs to be instantiated so /not/ mock.Mock()
 
         with mock.patch('subprocess.run', mock_run), ConfigForTest() as config, tempfile.TemporaryDirectory() as tmpdir:
             # mock/file setup

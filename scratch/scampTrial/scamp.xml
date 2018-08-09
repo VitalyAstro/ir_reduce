@@ -19,12 +19,12 @@
   <PARAM name="Soft_Auth" datatype="char" arraysize="*" ucd="meta.bib.author;meta.software" value="Emmanuel Bertin"/>
   <PARAM name="Soft_Ref" datatype="char" arraysize="*" ucd="meta.bib.bibcode;meta.software" value="2006ASPC..351..112B"/>
   <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="4"/>
-  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.end;meta.software" value="2018-08-06"/>
-  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.end;meta.software" value="13:56:15"/>
-  <PARAM name="Duration" datatype="float" ucd="time.duration;meta.software" value="7" unit="s"/>
+  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.end;meta.software" value="2018-08-08"/>
+  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.end;meta.software" value="15:03:03"/>
+  <PARAM name="Duration" datatype="float" ucd="time.duration;meta.software" value="8" unit="s"/>
   <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="basti"/>
   <PARAM name="Host" datatype="char" arraysize="*" ucd="meta.curation" value="(null)"/>
-  <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/home/basti/NTE/ir_reduce/test"/>
+  <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/home/basti/NTE/scratch/scampTrial"/>
   <TABLE ID="Fields" name="Fields">
    <DESCRIPTION>Data gathered by SCAMP for every  input catalog</DESCRIPTION>
    <!-- NFields may be 0 if an error occurred early in the processing -->
@@ -196,8 +196,8 @@
   </TABLE>
   <RESOURCE ID="Config" name="Config">
    <DESCRIPTION>SCAMP configuration</DESCRIPTION>
-   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="scamp sexout.fits -c /home/basti/NTE/ir_reduce/scamp.config"/>
-   <PARAM name="Prefs_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="/home/basti/NTE/ir_reduce/scamp.config"/>
+   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="scamp sexout.fits -c scamp.config"/>
+   <PARAM name="Prefs_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="scamp.config"/>
    <PARAM name="Ref_Server" datatype="char" arraysize="*" ucd="meta.ref.url" value="vizier.u-strasbg.fr"/>
    <PARAM name="Ref_TimeOut" unit="s" datatype="double" arraysize="1" ucd="meta;time.duration" value="10"/>
    <PARAM name="AstRef_Catalog" datatype="char" arraysize="*" ucd="meta.code;meta.file" value="GAIA-DR1"/>
@@ -209,7 +209,7 @@
    <PARAM name="AstRefMagErr_Key" datatype="char" arraysize="*" ucd="meta.id;phot.mag" value="MAGERR"/>
    <PARAM name="AstRefObsDate_Key" datatype="char" arraysize="*" ucd="meta.id;time.epoch" value="OBSDATE"/>
    <PARAM name="AstRefMag_Limits" unit="mag" datatype="double" arraysize="2" ucd="phot.mag;stat.min;stat.max;obs.param" value="-99 99"/>
-   <PARAM name="Save_RefCatalog" datatype="boolean" ucd="meta.code" value="F"/>
+   <PARAM name="Save_RefCatalog" datatype="boolean" ucd="meta.code" value="T"/>
    <PARAM name="RefOut_CatPath" datatype="char" arraysize="*" ucd="meta.id;meta.file" value="."/>
    <PARAM name="MergedOutCat_Name" datatype="char" arraysize="*" ucd="meta.id;meta.file;meta.dataset" value="merged.cat"/>
    <PARAM name="MergedOutCat_Type" datatype="char" arraysize="*" ucd="meta.code;meta.dataset" value="NONE"/>
@@ -286,7 +286,7 @@
    <PARAM name="CheckPlot_Name" datatype="char" arraysize="*" ucd="meta.id;meta.file" value="fgroups,distort,astr_interror2d,astr_interror1d,astr_referror2d,astr_referror1d,astr_chi2,psphot_error"/>
    <PARAM name="CheckImage_Type" datatype="char" arraysize="*" ucd="meta.code" value="NONE"/>
    <PARAM name="CheckImage_Name" datatype="char" arraysize="*" ucd="meta.id;meta.file;meta.fits" value="check.fits"/>
-   <PARAM name="Verbose_Type" datatype="char" arraysize="*" ucd="meta.code" value="NORMAL"/>
+   <PARAM name="Verbose_Type" datatype="char" arraysize="*" ucd="meta.code" value="FULL"/>
    <PARAM name="Write_XML" datatype="boolean" ucd="meta.code" value="T"/>
    <PARAM name="XSL_URL" datatype="char" arraysize="*" ucd="meta.ref.url" value="file:///usr/share/scamp/scamp.xsl"/>
    <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="4"/>
