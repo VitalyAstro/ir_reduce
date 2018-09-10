@@ -19,8 +19,8 @@
   <PARAM name="Soft_Auth" datatype="char" arraysize="*" ucd="meta.bib.author;meta.software" value="Emmanuel Bertin"/>
   <PARAM name="Soft_Ref" datatype="char" arraysize="*" ucd="meta.bib.bibcode;meta.software" value="2006ASPC..351..112B"/>
   <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="4"/>
-  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.end;meta.software" value="2018-08-08"/>
-  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.end;meta.software" value="15:03:03"/>
+  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.end;meta.software" value="2018-09-10"/>
+  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.end;meta.software" value="09:40:25"/>
   <PARAM name="Duration" datatype="float" ucd="time.duration;meta.software" value="8" unit="s"/>
   <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="basti"/>
   <PARAM name="Host" datatype="char" arraysize="*" ucd="meta.curation" value="(null)"/>
@@ -76,15 +76,15 @@
    <FIELD name="NDeg_Reference_HighSN" datatype="int" ucd="stat.fit.dof"/>
    <DATA><TABLEDATA>
     <TR>
-     <TD>1</TD><TD>sexout.fits</TD><TD>16eg 2</TD>
+     <TD>1</TD><TD>sexout.fits</TD><TD>PNVJ191501 2</TD>
      <TD>1</TD><TD>2</TD><TD>0</TD><TD>1</TD><TD>F</TD>
-     <TD>47</TD><TD>1</TD><TD>A1</TD><TD>P1</TD><TD>F</TD><TD>F</TD>
-     <TD>2017.182055758</TD><TD>60.000</TD><TD>1.09</TD><TD>261.5416543 42.3352823</TD>
-     <TD>0.234063  0.234063</TD><TD>2.58888</TD><TD>0</TD>
-     <TD>0.995838</TD><TD>-0.0391777</TD><TD>17.5112</TD>
-     <TD>0.00022831</TD><TD>0.000434906</TD><TD>7.49922</TD><TD>0.000305841</TD><TD>31.291</TD>
+     <TD>743</TD><TD>1</TD><TD>A1</TD><TD>P1</TD><TD>F</TD><TD>F</TD>
+     <TD>2017.182015229</TD><TD>35.000</TD><TD>1.88</TD><TD>288.7570453 7.331489214</TD>
+     <TD>0.234187  0.234187</TD><TD>2.58879</TD><TD>0</TD>
+     <TD>0.999902</TD><TD>0.00550404</TD><TD>26.6509</TD>
+     <TD>4.54422e-05</TD><TD>0.000943657</TD><TD>24.015</TD><TD>3.73756e-05</TD><TD>53.9303</TD>
      <TD>0</TD><TD>0</TD><TD>0</TD><TD>0</TD>
-     <TD>0.00272778 -0.00125921</TD><TD>0.0142763 0.0164609</TD><TD>-0.00735006</TD><TD>2.99002</TD><TD>20</TD><TD>0.00129421 0.00274721</TD><TD>0.00312152 0.00949117</TD><TD>0.565808</TD><TD>2.73715</TD><TD>8</TD>
+     <TD>-0.00544756 -0.00377343</TD><TD>0.0853461 0.0805688</TD><TD>0.176861</TD><TD>53.8599</TD><TD>625</TD><TD>0.0025798 -0.00102463</TD><TD>0.0439279 0.052711</TD><TD>-0.142159</TD><TD>111.644</TD><TD>168</TD>
     </TR>
    </TABLEDATA></DATA>
   </TABLE>
@@ -140,15 +140,15 @@
    <TR>
      <TD>G1</TD><TD>1</TD><TD>1</TD>
      <TD>2</TD><TD>0</TD><TD>1</TD>
-     <TD>261.541423 42.33486517</TD><TD>0.235006  0.235006</TD><TD>2.59895</TD>
+     <TD>288.7569995 7.330545871</TD><TD>0.234206  0.234206</TD><TD>2.58915</TD>
      <TD>GAIA-DR1</TD><TD>G</TD>
-     <TD>0 0</TD><TD>0</TD><TD>0</TD><TD>20</TD>
-     <TD>0 0</TD><TD>0</TD><TD>0</TD><TD>8</TD>
-     <TD>0.00272778 -0.00125921</TD><TD>0.01429 0.0164634</TD><TD>-0.0073419</TD><TD>2.99002</TD><TD>20</TD>
-     <TD>0.00129421 0.00274721</TD><TD>0.00312152 0.00949117</TD><TD>-0.0183548</TD><TD>2.73715</TD><TD>8</TD>
+     <TD>0 0</TD><TD>0</TD><TD>0</TD><TD>625</TD>
+     <TD>0 0</TD><TD>0</TD><TD>0</TD><TD>168</TD>
+     <TD>-0.00544756 -0.00377343</TD><TD>0.0853464 0.0805689</TD><TD>0.17686</TD><TD>53.8599</TD><TD>625</TD>
+     <TD>0.0025798 -0.00102463</TD><TD>0.0439279 0.052711</TD><TD>0.657962</TD><TD>111.644</TD><TD>168</TD>
      <TD>P1</TD>
-     <TD>0</TD><TD>0</TD><TD>20</TD>
-     <TD>0</TD><TD>0</TD><TD>8</TD>
+     <TD>0</TD><TD>0</TD><TD>625</TD>
+     <TD>0</TD><TD>0</TD><TD>168</TD>
      <TD>0</TD><TD>0</TD><TD>0</TD>
      <TD>0</TD><TD>0</TD><TD>0</TD>
     </TR>
@@ -196,7 +196,7 @@
   </TABLE>
   <RESOURCE ID="Config" name="Config">
    <DESCRIPTION>SCAMP configuration</DESCRIPTION>
-   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="scamp sexout.fits -c scamp.config"/>
+   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="scamp -c scamp.config sexout.fits"/>
    <PARAM name="Prefs_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="scamp.config"/>
    <PARAM name="Ref_Server" datatype="char" arraysize="*" ucd="meta.ref.url" value="vizier.u-strasbg.fr"/>
    <PARAM name="Ref_TimeOut" unit="s" datatype="double" arraysize="1" ucd="meta;time.duration" value="10"/>
@@ -286,7 +286,7 @@
    <PARAM name="CheckPlot_Name" datatype="char" arraysize="*" ucd="meta.id;meta.file" value="fgroups,distort,astr_interror2d,astr_interror1d,astr_referror2d,astr_referror1d,astr_chi2,psphot_error"/>
    <PARAM name="CheckImage_Type" datatype="char" arraysize="*" ucd="meta.code" value="NONE"/>
    <PARAM name="CheckImage_Name" datatype="char" arraysize="*" ucd="meta.id;meta.file;meta.fits" value="check.fits"/>
-   <PARAM name="Verbose_Type" datatype="char" arraysize="*" ucd="meta.code" value="FULL"/>
+   <PARAM name="Verbose_Type" datatype="char" arraysize="*" ucd="meta.code" value="NORMAL"/>
    <PARAM name="Write_XML" datatype="boolean" ucd="meta.code" value="T"/>
    <PARAM name="XSL_URL" datatype="char" arraysize="*" ucd="meta.ref.url" value="file:///usr/share/scamp/scamp.xsl"/>
    <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="4"/>
