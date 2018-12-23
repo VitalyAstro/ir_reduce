@@ -19,4 +19,9 @@ _build
 *.par
 
 testdata
+tools
+scratch
+panstarrs
+bin
+photometrypipeline
 .idea
