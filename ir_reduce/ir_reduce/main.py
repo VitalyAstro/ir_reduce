@@ -14,6 +14,12 @@ from astropy.io import fits
 from .image_discovery import ImageGroup
 from .run_sextractor_scamp import run_astroref as run_scamp
 
+from multiprocessing import Pool  # creating a global pool does not work as the workers import this exact file,
+# causing infinite loops/import errors. Moving invoked functions out of this file should solve the issue
+
+from multiprocessing import cpu_count
+n_cpu = cpu_count()
+
 from functools import reduce
 
 from typing import List, Tuple, Iterable, Set, Union, Any, Dict
@@ -64,6 +70,24 @@ def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable
     return ret
 
 
+def single_reduction(image, bad, flat):
+    image.mask = bad
+    # TODO that's from the quicklook-package, probably would want to do this individually for every sensor area
+    gain = (image.header['GAIN1'] + image.header['GAIN2'] + image.header['GAIN3'] + image.header['GAIN4']) / 4
+    readnoise = (image.header['RDNOISE1'] + image.header['RDNOISE2'] + image.header['RDNOISE3'] + image.header[
+        'RDNOISE4']) / 4
+    reduced = ccdproc.ccd_process(image,
+                                  oscan=None,
+                                  error=True,
+                                  gain=gain * u.electron / u.count,
+                                  # TODO check if this is right or counts->adu required
+                                  readnoise=readnoise * u.electron,
+                                  dark_frame=None,
+                                  master_flat=flat,
+                                  bad_pixel_mask=bad)
+    return reduced
+
+
 def standard_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) -> List[CCDData]:
     """
     Do the ccdproc operation on a list of images. includes some extra logic for NOTCAM images to get the
@@ -75,24 +99,8 @@ def standard_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) 
     """
     bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads))  # combine bad pixel masks
 
-    reduceds = []
-    for image in images:
-        image.mask = bad
-        # TODO that's from the quicklook-package, probably would want to do this individually for every sensor area
-        gain = (image.header['GAIN1'] + image.header['GAIN2'] + image.header['GAIN3'] + image.header['GAIN4']) / 4
-        readnoise = (image.header['RDNOISE1'] + image.header['RDNOISE2'] + image.header['RDNOISE3'] + image.header[
-            'RDNOISE4']) / 4
-        reduced = ccdproc.ccd_process(image,
-                                      oscan=None,
-                                      error=True,
-                                      gain=gain * u.electron / u.count,
-                                      # TODO check if this is right or counts->adu required
-                                      readnoise=readnoise * u.electron,
-                                      dark_frame=None,
-                                      master_flat=flat,
-                                      bad_pixel_mask=bad)
-        reduceds.append(reduced)
-    return reduceds
+    pool = Pool(n_cpu)
+    return list(itertools.starmap(single_reduction, zip([image.copy() for image in images], itertools.repeat(bad), itertools.repeat(flat))))
 
 
 def tiled_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) -> List[CCDData]:
@@ -279,13 +287,17 @@ def do_everything(bads: Iterable[str],
     # TODO distortion correct here
 
     # Perform basic reduction operations
+
     processed = standard_process(read_files.bad, read_files.flat[0], read_files.images)
     skyscaled = skyscale(processed, skyscale_method)
-    fixed = [fix_pix(image) for image in skyscaled]
+
+    pool = Pool(n_cpu)
+    fixed = pool.map(fix_pix, skyscaled)
 
     # Reproject everything to the world-coordinate system of the first image
     wcs = fixed[0].wcs
-    reprojected = [ccdproc.wcs_project(img, wcs) for img in fixed]
+
+    reprojected = pool.starmap(ccdproc.wcs_project, zip(fixed, itertools.repeat(wcs)))
 
     # TODO option to align with cross correlation (see image_registration)
 
