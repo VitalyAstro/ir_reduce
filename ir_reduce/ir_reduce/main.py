@@ -17,6 +17,12 @@ from .run_sextractor_scamp import run_astroref as run_scamp
 from multiprocessing import Pool  # creating a global pool does not work as the workers import this exact file,
 # causing infinite loops/import errors. Moving invoked functions out of this file should solve the issue
 
+class PoolDummy:
+    """overwrite multiprocessing.Pool with this to make it single threaded"""
+    def __init__(self,*args):
+        self.starmap = itertools.starmap
+        self.map = map
+
 from multiprocessing import cpu_count
 n_cpu = cpu_count()
 
@@ -43,7 +49,9 @@ def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable
     :return: A dictionary which maps filter-id -> [bads, flats, images]
     """
     # TODO move asserts into unit-test or introduce a validation flag/wrapper
-    assert (all(os.path.isfile(path) for path in itertools.chain(bads, flats, exposures)))
+    for path in itertools.chain(bads, flats, exposures):
+        if not os.path.isfile(path):
+            assert False, 'path '+path+' does not seem to exist'
 
     image_datas = [astropy.nddata.CCDData.read(image) for image in exposures]
     flat_datas = [astropy.nddata.CCDData.read(image) for image in flats]
@@ -100,7 +108,7 @@ def standard_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) 
     bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads))  # combine bad pixel masks
 
     pool = Pool(n_cpu)
-    return list(pool.starmap(single_reduction, zip([image.copy() for image in images], itertools.repeat(bad), itertools.repeat(flat))))
+    return list(pool.starmap(single_reduction, zip(images, itertools.repeat(bad), itertools.repeat(flat))))
 
 
 def tiled_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) -> List[CCDData]:
@@ -142,6 +150,9 @@ def tiled_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) -> 
         reduceds.append(reduced)
     return reduceds
 
+def subtract(a,b):
+    return a.subtract(b)
+
 
 def skyscale(image_list: Iterable[CCDData], method: str = 'subtract',
              cut: Tuple[Union[slice, int]] = s_[200:800, 200:800]) -> List[CCDData]:
@@ -158,15 +169,20 @@ def skyscale(image_list: Iterable[CCDData], method: str = 'subtract',
     medians = np.array([np.median(data[cut]) for data in filtered_data])
     #airmass = sum((image.header['AIRMASS'] for image in image_list))  # TODO needed?
 
+
+    pool = Pool(n_cpu)
+
     # TODO from original code:
     # Calculate scaling relatively to last image median
     # Why not average or median-median?
     if method == 'subtract':
-        medians = (medians - medians[-1])
-        ret = [CCDData.subtract(image, median * u.electron) for image, median in zip(image_list, medians)]
+        medians = (medians - medians[-1]) * u.electron
+        #ret = [CCDData.subtract(image, median * u.electron) for image, median in zip(image_list, medians)]
+        ret = pool.starmap(subtract, zip(image_list, medians))
     elif method == 'divide':
-        medians = medians / medians[-1]
-        ret = [CCDData.subtract(image, median * u.electron) for image, median in zip(image_list, medians)]
+        medians = (medians / medians[-1]) * u.electron
+        #ret = [CCDData.subtract(image, median * u.electron) for image, median in zip(image_list, medians)]
+        ret = pool.starmap(subtract, zip(image_list, medians))
     else:
         raise ValueError('method needs to be either subtract or divide')
 
@@ -305,7 +321,7 @@ def do_everything(bads: Iterable[str],
     combiner = ccdproc.Combiner(reprojected)
     output_image = combiner.median_combine() if combine == 'median' else combiner.average_combine()
     # WTF. ccdproc.Combiner is not giving back good metadata.
-    # need to set WCS manually agai and convert header to astropy.fits.io.Header object from an ordered dict
+    # need to set WCS manually again and convert header to astropy.fits.io.Header object from an ordered dict
     # not replacing this can cause weird errors during file writing/wcs conversion
     output_image.wcs = wcs
     output_image.header = astropy.io.fits.header.Header(output_image.header)

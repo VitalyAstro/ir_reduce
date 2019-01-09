@@ -56,7 +56,7 @@ def test_at_syntax():
         args.func(args)
 
     with tempfile.TemporaryDirectory() as dir:
-        bad, flat, im = [ os.path.join(dir, i) for i in ('bad', 'flat', 'im')]
+        bad, flat, im = [os.path.join(dir, i) for i in ('bad', 'flat', 'im')]
         with open(bad, 'w') as f:
             f.write('bad\nbar\n')
         with open(flat, 'w') as f:
