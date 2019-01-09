@@ -6,7 +6,14 @@ import tempfile
 import os
 
 def test_basic():
-    cli_main()
+    # if --runintegration is passed to pytest, it polutes sys.argv
+    import sys
+    saved = sys.argv
+    try:
+        sys.argv = []
+        cli_main()
+    finally:
+        sys.argv = saved
 
 def test_parsing():
     parser = cli.parser

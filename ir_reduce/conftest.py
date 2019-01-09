@@ -4,6 +4,9 @@ def pytest_addoption(parser):
     parser.addoption(
         "--runintegration", action="store_true", default=False, help="run integration tests depending on testdata"
     )
+    parser.addoption(
+        "--dummy", action="store_true", default=False, help="dummy argument"
+    )
 
 
 def pytest_collection_modifyitems(config, items):

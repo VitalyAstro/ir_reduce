@@ -100,7 +100,7 @@ def standard_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) 
     bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads))  # combine bad pixel masks
 
     pool = Pool(n_cpu)
-    return list(itertools.starmap(single_reduction, zip([image.copy() for image in images], itertools.repeat(bad), itertools.repeat(flat))))
+    return list(pool.starmap(single_reduction, zip([image.copy() for image in images], itertools.repeat(bad), itertools.repeat(flat))))
 
 
 def tiled_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) -> List[CCDData]:
@@ -152,7 +152,7 @@ def skyscale(image_list: Iterable[CCDData], method: str = 'subtract',
     :param cut: what region of the images to consider to create the median sky value
     :return: images, with sky removed
     """
-    sigma_clip = SigmaClip(sigma=3., iters=3)
+    sigma_clip = SigmaClip(sigma=3., maxiters=3)
     filtered_data = [sigma_clip(image.data) for image in image_list]
 
     medians = np.array([np.median(data[cut]) for data in filtered_data])
