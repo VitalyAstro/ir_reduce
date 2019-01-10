@@ -9,6 +9,7 @@ include ir_reduce/*.db
 include ir_reduce/*.param
 include ir_reduce/*.py
 include *.py
+include pytest.ini
 
 recursive-include docs *.py
 recursive-include docs *.rst
