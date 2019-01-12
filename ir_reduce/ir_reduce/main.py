@@ -30,6 +30,15 @@ class PoolDummy:
     def __init__(self,*args):
         self.starmap = itertools.starmap
         self.map = map
+    def map_async(self,fun,iterable):
+        class get_returner:
+            def __init__(self,fun,iterable):
+                self.fun =fun
+                self.iterable = iterable
+            def get(self):
+                return map(self.fun,self.iterable)
+        return get_returner(fun,iterable)
+
     def close(self):
         pass
     def join(self):
@@ -60,9 +69,12 @@ def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable
         if not os.path.isfile(path):
             assert False, 'path '+path+' does not seem to exist'
 
-    image_datas = list(pool.map(astropy.nddata.CCDData.read, exposures))
-    flat_datas = list(pool.map(astropy.nddata.CCDData.read, flats))
-    bad_datas = list(pool.map(astropy.nddata.CCDData.read, bads))
+    image_promise = pool.map_async(astropy.nddata.CCDData.read, exposures)
+    flat_promise = pool.map_async(astropy.nddata.CCDData.read, flats)
+    bad_promise = pool.map_async(astropy.nddata.CCDData.read, bads)
+    image_datas = list(image_promise.get())
+    flat_datas = list(flat_promise.get())
+    bad_datas = list(bad_promise.get())
 
     ret = dict()
     # for all filter present in science data we need at least a flatImage and a bad pixel image

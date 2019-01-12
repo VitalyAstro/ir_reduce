@@ -7,7 +7,7 @@ import glob
 from numpy import array, zeros, ones, float64, int64, s_
 import numpy as np
 import os
-from ir_reduce import standard_process, skyscale, interpolate, read_and_sort, do_everything
+from ir_reduce import standard_process, skyscale, interpolate, read_and_sort, do_everything, Pool, PoolDummy
 import tempfile
 
 # Setup
@@ -69,14 +69,15 @@ def test_interpolate():
 
 @pytest.mark.integration
 @pytest.mark.filterwarnings('ignore::astropy.wcs.FITSFixedWarning')
-def test_read_and_sort():
+@pytest.mark.parametrize('pool', [PoolDummy(), Pool(2)])
+def test_read_and_sort(pool):
     testdir = os.path.abspath("../testdata")
     assert os.path.isdir(testdir), testdir + " does not exist"
 
     bads = glob.glob(testdir + "/bad*.fits")
     flats = glob.glob(testdir + "/Flat*.fits")
     imgs = glob.glob(testdir + "/NCA*.fits")
-    read = read_and_sort(bads, flats, imgs)
+    read = read_and_sort(bads, flats, imgs, pool)
     assert read['J'].bad
     assert read['J'].flat
     assert len(read['J'].images) > 0
