@@ -1,6 +1,8 @@
 import ir_reduce
 import cProfile, pstats
 from pstats import SortKey
+from pyprof2calltree import convert
+
 
 pr = cProfile.Profile()
 pr.enable()
@@ -25,6 +27,8 @@ ir_reduce.do_everything(['../testdata/bad_cold5.fits', '../testdata/bad_hot2.fit
                         output=False)
 
 pr.disable()
+pr.dump_stats('multicore.stats')
+convert(pr.getstats(), 'multicore.kgrind')
 
 prsingle = cProfile.Profile()
 ir_reduce.Pool = ir_reduce.PoolDummy
@@ -50,6 +54,8 @@ ir_reduce.do_everything(['../testdata/bad_cold5.fits', '../testdata/bad_hot2.fit
      "../testdata/NCAc070891.fits"],
                         output=False)
 prsingle.disable()
+prsingle.dump_stats('singlecore.stats')
+convert(prsingle.getstats(), 'singlecore.kgrind')
 
 print("\n\n\n\n_______ multithreaded _______ \n\n\n\n")
 ps = pstats.Stats(pr).sort_stats(SortKey.CUMULATIVE)
