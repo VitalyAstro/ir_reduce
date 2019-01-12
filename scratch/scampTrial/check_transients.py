@@ -27,7 +27,9 @@ sex_world=wcs.wcs_pix2world(np.array(sex['XWIN_IMAGE','YWIN_IMAGE'].to_pandas())
 distinct=[]
 ambig = []
 notfound = []
-for row in sex:
+min_starclassifier = 0.8
+
+for row in sex[sex['CLASS_STAR']>0.8]:
     x,y = row['XWIN_IMAGE'], row['YWIN_IMAGE']
     xerr, yerr = row['ERRX2WIN_IMAGE'], row['ERRY2WIN_IMAGE']
 
