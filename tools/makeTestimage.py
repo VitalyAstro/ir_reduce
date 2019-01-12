@@ -1,3 +1,4 @@
+#! /bin/python3
 from astropy.nddata import CCDData
 import numpy as np
 from pylab import *

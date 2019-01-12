@@ -31,7 +31,7 @@ def genImages(request):
 
 @pytest.fixture(params=[zeros(image_size, dtype=bool), ones(image_size, dtype=bool)])
 def genBadPixel(request):
-    return CCDData(request.param, unit=u.electron)
+        return CCDData(request.param, unit=u.electron)
 
 
 # testcases

@@ -28,12 +28,12 @@ def call_reduce(bads: Iterable[str],
 
 def do_manual(args: argparse.Namespace):
     # slightly hacky way to implement @list syntax
-    if any('@' in exp for exp in args.exposures):
-        if not len(args.exposures) == 1:
-            raise ValueError('When using @listfile syntax, you must specify exactly one argument for exposures')
-        with open(args.exposures[0].replace('@', ''), 'r') as f:
+    if any('@' in img for img in args.images):
+        if not len(args.images) == 1:
+            raise ValueError('When using @listfile syntax, you must specify exactly one argument for images')
+        with open(args.images[0].replace('@', ''), 'r') as f:
             # remove whitespaces, empty lines and '#' comments
-            args.exposures = [i.strip() for i in f.readlines() if i.strip() and not i.strip().startswith('#')]
+            args.images = [i.strip() for i in f.readlines() if i.strip() and not i.strip().startswith('#')]
     if any('@' in bad for bad in args.bad):
         if not len(args.bad) == 1:
             raise ValueError('When using @listfile syntax, you must specify exactly one argument for bad-pixel maps')
@@ -45,7 +45,7 @@ def do_manual(args: argparse.Namespace):
         with open(args.flat[0].replace('@', ''), 'r') as f:
             args.flat = [i.strip() for i in f.readlines() if i.strip() and not i.strip().startswith('#')]
 
-    return call_reduce(args.bad, args.flat, args.exposures, args)
+    return call_reduce(args.bad, args.flat, args.images, args)
 
 
 def do_discover(args: argparse.Namespace):
@@ -81,9 +81,6 @@ parser.add_argument('-r', '--register-images', action='store_true',
                     help='[not implemented] images are aligned with cross correlation, not just based on WCS')
 parser.add_argument('--filter', '-fl', nargs=1, default='J', help='What image filter do we want to process?')
 
-# Not sure if the next one is a good idea...
-parser.add_argument('--force', '--javascript', action='store_true',
-                    help='[not implemented] Non fatal errors and validation are ignored. https://www.destroyallsoftware.com/talks/wat')
 parser.add_argument('output', nargs='?', type=str, default='reduced.fits',
                         help='output file to write to, default: reduced.fits')
 
@@ -99,7 +96,7 @@ sub_parser.add_argument('-f', '--flat', required=True, metavar='flatfield', narg
                         help='Flat field image. Can specify in textfile and pass @textfile')
 sub_parser.add_argument('-b', '--bad', required=True, metavar='badPixelMap', nargs='+', type=str,
                         help='bad pixel maps. Will be combined. Can specify in textfile and pass @textfile')
-sub_parser.add_argument('-e', '--exposures', required=True, metavar='image', nargs='+', type=str,
+sub_parser.add_argument('-i', '--images', required=True, metavar='image', nargs='+', type=str,
                         help='the images you want to combine. Can specify in textfile and pass @textfile')
 sub_parser.set_defaults(func=do_manual)
 

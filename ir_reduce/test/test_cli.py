@@ -17,12 +17,12 @@ def test_basic():
 
 def test_parsing():
     parser = cli.parser
-    parser.parse_args(['out.fits', 'm', '-b', '../testdata/bad_*', '-f', '../testdata/FlatJ.fits', '-e', '../testdata/NCAc0708*fits'])
+    parser.parse_args(['out.fits', 'm', '-b', '../testdata/bad_*', '-f', '../testdata/FlatJ.fits', '-i', '../testdata/NCAc0708*fits'])
 
 def test_roundtrip():
     parser = cli.parser
     # manual
-    args = parser.parse_args(['out.fits', 'm', '-b', 'bad1', '-f', 'flat1', '-e', 'im1'])
+    args = parser.parse_args(['out.fits', 'm', '-b', 'bad1', '-f', 'flat1', '-i', 'im1'])
     assert args.func == cli.do_manual
     mock_reduce = mock.Mock()
     with mock.patch('ir_reduce.cli.call_reduce', mock_reduce):
@@ -50,7 +50,7 @@ def test_invalid_args(capsys):
 
 def test_at_syntax():
     parser = cli.parser
-    args = parser.parse_args(['out.fits', 'm', '-b', '@1', '@2', '-f', 'foo', '-e', 'bar'])
+    args = parser.parse_args(['out.fits', 'm', '-b', '@1', '@2', '-f', 'foo', '-i', 'bar'])
     # check if multiple @-args fail
     with pytest.raises(ValueError):
         args.func(args)
@@ -63,7 +63,7 @@ def test_at_syntax():
             f.write('flat\nfoo\n')
         with open(im, 'w') as f:
             f.write('im\nbaz\n')
-        args = parser.parse_args(['out.fits', 'm', '-b', f'@{bad}', '-f', f'@{flat}', '-e', f'@{im}'])
+        args = parser.parse_args(['out.fits', 'm', '-b', f'@{bad}', '-f', f'@{flat}', '-i', f'@{im}'])
 
         mock_reduce = mock.Mock()
         with mock.patch('ir_reduce.cli.call_reduce', mock_reduce):

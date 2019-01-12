@@ -1,35 +1,40 @@
 """
 Module for reducing infrared Data, currently for NOTCam but intended for a future instrument
 """
-import numpy as np
-import astropy
-import os
 import itertools
-from astropy import units as u
-from astropy.nddata import CCDData
+import os
+import warnings
+from functools import reduce
+from multiprocessing import Pool, \
+    cpu_count  # creating a global pool does not work as the workers import this exact file,
+from typing import List, Tuple, Iterable, Union, Dict
+
+import astropy
 import astropy.io.fits as fits
 import ccdproc
-from astropy.stats import SigmaClip
+import numpy as np
+from astropy import units as u
 from astropy.io import fits
+from astropy.nddata import CCDData
+from astropy.stats import SigmaClip
+from numpy import s_  # numpy helper to create slices by indexing this
+
 from .image_discovery import ImageGroup
 from .run_sextractor_scamp import run_astroref as run_scamp
 
-from multiprocessing import Pool  # creating a global pool does not work as the workers import this exact file,
 # causing infinite loops/import errors. Moving invoked functions out of this file should solve the issue
+n_cpu = cpu_count()
 
 class PoolDummy:
     """overwrite multiprocessing.Pool with this to make it single threaded"""
     def __init__(self,*args):
         self.starmap = itertools.starmap
         self.map = map
+    def close(self):
+        pass
+    def join(self):
+        pass
 
-from multiprocessing import cpu_count
-n_cpu = cpu_count()
-
-from functools import reduce
-
-from typing import List, Tuple, Iterable, Set, Union, Any, Dict
-from numpy import s_  # numpy helper to create slices by indexing this
 
 # Globals: Fits-columns #todo: put in module
 filter_column = 'NCFLTNM2'  # TODO NOTCam-specific
@@ -39,13 +44,15 @@ image_category = 'IMAGECAT'
 object_ID = 'OBJECT'
 
 
-def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable[str]) -> Dict[str, ImageGroup]:
+def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable[str],
+                  pool: Union[PoolDummy, Pool] = PoolDummy()) -> Dict[str, ImageGroup]:
     """
     read in images and sort them by filter, return the CCDDatas
 
     :param bads: list of paths to bad pixel frames
     :param flats: list of paths to flat frames
     :param exposures: list of paths to images
+    :param pool: funnily enough this benefits from multiprocessing
     :return: A dictionary which maps filter-id -> [bads, flats, images]
     """
     # TODO move asserts into unit-test or introduce a validation flag/wrapper
@@ -53,9 +60,9 @@ def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable
         if not os.path.isfile(path):
             assert False, 'path '+path+' does not seem to exist'
 
-    image_datas = [astropy.nddata.CCDData.read(image) for image in exposures]
-    flat_datas = [astropy.nddata.CCDData.read(image) for image in flats]
-    bad_datas = [astropy.nddata.CCDData.read(image) for image in bads]
+    image_datas = list(pool.map(astropy.nddata.CCDData.read, exposures))
+    flat_datas = list(pool.map(astropy.nddata.CCDData.read, flats))
+    bad_datas = list(pool.map(astropy.nddata.CCDData.read, bads))
 
     ret = dict()
     # for all filter present in science data we need at least a flatImage and a bad pixel image
@@ -84,6 +91,7 @@ def single_reduction(image, bad, flat):
     gain = (image.header['GAIN1'] + image.header['GAIN2'] + image.header['GAIN3'] + image.header['GAIN4']) / 4
     readnoise = (image.header['RDNOISE1'] + image.header['RDNOISE2'] + image.header['RDNOISE3'] + image.header[
         'RDNOISE4']) / 4
+
     reduced = ccdproc.ccd_process(image,
                                   oscan=None,
                                   error=True,
@@ -92,22 +100,24 @@ def single_reduction(image, bad, flat):
                                   readnoise=readnoise * u.electron,
                                   dark_frame=None,
                                   master_flat=flat,
-                                  bad_pixel_mask=bad)
+                                  bad_pixel_mask=bad,
+                                  add_keyword=None)
     return reduced
 
 
-def standard_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) -> List[CCDData]:
+def standard_process(bads: List[CCDData], flat: CCDData, images: List[CCDData],
+                     pool: Union[PoolDummy, Pool]=PoolDummy()) -> List[CCDData]:
     """
     Do the ccdproc operation on a list of images. includes some extra logic for NOTCAM images to get the
     gain and readnoise out of the headers
     :param bads:
     :param flat:
     :param images:
+    :param pool: optional process pool
     :return:
     """
     bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads))  # combine bad pixel masks
 
-    pool = Pool(n_cpu)
     return list(pool.starmap(single_reduction, zip(images, itertools.repeat(bad), itertools.repeat(flat))))
 
 
@@ -155,22 +165,21 @@ def subtract(a,b):
 
 
 def skyscale(image_list: Iterable[CCDData], method: str = 'subtract',
+             pool: Union[PoolDummy, Pool] = PoolDummy(),
              cut: Tuple[Union[slice, int]] = s_[200:800, 200:800]) -> List[CCDData]:
     """
     Subtract/divide out the median sky value of some images
     :param image_list: The images to process
     :param method: either 'subtract' or 'divide'
     :param cut: what region of the images to consider to create the median sky value
+    :param pool: optional multiprocessing pool
     :return: images, with sky removed
     """
     sigma_clip = SigmaClip(sigma=3., maxiters=3)
-    filtered_data = [sigma_clip(image.data) for image in image_list]
+    filtered_data = pool.map(sigma_clip, (image.data for image in image_list))
 
-    medians = np.array([np.median(data[cut]) for data in filtered_data])
+    medians = np.array(list(pool.map(np.median, (data[cut] for data in filtered_data))))
     #airmass = sum((image.header['AIRMASS'] for image in image_list))  # TODO needed?
-
-
-    pool = Pool(n_cpu)
 
     # TODO from original code:
     # Calculate scaling relatively to last image median
@@ -275,14 +284,36 @@ def interpolate(img: CCDData):
 
     return img
 
-
 def do_everything(bads: Iterable[str],
                   flats: Iterable[str],
                   images: Iterable[str],
                   output: Union[str, bool],
                   filter_letter: str = 'J',  # TODO: allow 'all'
                   combine: str = 'median',
-                  skyscale_method: str = 'subtract') -> Tuple[CCDData, str, bytes]:
+                  skyscale_method: str = 'subtract'):
+
+    reduced_image = do_reduce(bads,flats,images,filter_letter,combine,skyscale_method)
+    reffed_image, scamp_data, sextractor_data = do_astroref(reduced_image)
+
+    if output:
+        with open(output + '_scamp.head', 'w') as f:
+            f.write(scamp_data)
+        with open(output + '_sextractor.fits', 'wb') as f:
+            f.write(sextractor_data)
+        try:
+            reffed_image.write(output, overwrite='True')
+        except OSError as err:
+            print(err, "writing output failed")
+
+    return reffed_image, scamp_data, sextractor_data
+
+
+def do_reduce(bads: Iterable[str],
+                  flats: Iterable[str],
+                  images: Iterable[str],
+                  filter_letter: str = 'J',  # TODO: allow 'all'
+                  combine: str = 'median',
+                  skyscale_method: str = 'subtract') -> CCDData:
     """
     Take a list of files for badPixel, flatfield and exposures + a bunch of processing parameters and reduce them
     to write an output filec
@@ -295,39 +326,43 @@ def do_everything(bads: Iterable[str],
     :param skyscale_method: either 'subtract' or 'divide'
     :return: (combined_output, scamp_output, sextractor_output)
     """
-    # TODO the images this spits out are not quite
 
     assert (filter_letter in filter_vals)
-    read_files = read_and_sort(bads, flats, images)[filter_letter]
 
-    # TODO distortion correct here
+    # use pool as a context manager so that terminate() gets called automatically
+    with Pool(n_cpu) as pool:
+        read_files = read_and_sort(bads, flats, images, pool)[filter_letter]
 
-    # Perform basic reduction operations
+        # TODO distortion correct here
 
-    processed = standard_process(read_files.bad, read_files.flat[0], read_files.images)
-    skyscaled = skyscale(processed, skyscale_method)
+        # Perform basic reduction operations
+        processed = standard_process(read_files.bad, read_files.flat[0], read_files.images, pool)
+        skyscaled = skyscale(processed, skyscale_method, pool)
 
-    pool = Pool(n_cpu)
-    fixed = pool.map(fix_pix, skyscaled)
+        fixed = pool.map(fix_pix, skyscaled)
 
-    # Reproject everything to the world-coordinate system of the first image
-    wcs = fixed[0].wcs
+        # Reproject everything to the world-coordinate system of the first image
+        wcs = fixed[0].wcs
 
-    reprojected = pool.starmap(ccdproc.wcs_project, zip(fixed, itertools.repeat(wcs)))
+        reprojected = pool.starmap(ccdproc.wcs_project, zip(fixed, itertools.repeat(wcs)))
 
-    # TODO option to align with cross correlation (see image_registration)
+        # TODO option to align with cross correlation (see image_registration)
 
-    # overlay images
-    combiner = ccdproc.Combiner(reprojected)
-    output_image = combiner.median_combine() if combine == 'median' else combiner.average_combine()
-    # WTF. ccdproc.Combiner is not giving back good metadata.
-    # need to set WCS manually again and convert header to astropy.fits.io.Header object from an ordered dict
-    # not replacing this can cause weird errors during file writing/wcs conversion
-    output_image.wcs = wcs
-    output_image.header = astropy.io.fits.header.Header(output_image.header)
+        # overlay images
+        combiner = ccdproc.Combiner(reprojected)
+        output_image = combiner.median_combine() if combine == 'median' else combiner.average_combine()
+        # WTF. ccdproc.Combiner is not giving back good metadata.
+        # need to set WCS manually again and convert header to astropy.fits.io.Header object from an ordered dict
+        # not replacing this can cause weird errors during file writing/wcs conversion
+        output_image.wcs = wcs
+        output_image.header = astropy.io.fits.header.Header(output_image.header)
 
+        return output_image
+
+
+def do_astroref(combined_image:CCDData):
     # The output has 3 hdus: image and error/mask. This confuses scamp, so only take the image to feed it to scamp
-    first_hdu = output_image.to_hdu()[0]
+    first_hdu = combined_image.to_hdu()[0]
     scamp_input = CCDData(first_hdu.data, header=first_hdu.header, unit=first_hdu.header['bunit'])
     scamp_data, sextractor_data = run_scamp(scamp_input)
 
@@ -338,17 +373,7 @@ def do_everything(bads: Iterable[str],
         if entry.startswith('PV'):
             scamp_header.pop(entry)
 
-    output_image.header.update(scamp_header)
-    output_image.wcs = astropy.wcs.WCS(scamp_header)
+    combined_image.header.update(scamp_header)
+    combined_image.wcs = astropy.wcs.WCS(scamp_header)
 
-    if output:
-        with open(output + 'scamp.head', 'w') as f:
-            f.write(scamp_data)
-        with open(output + 'sextractor.fits', 'wb') as f:
-            f.write(sextractor_data)
-        try:
-            output_image.write(output, overwrite='True')
-        except OSError as err:
-            print(err, "writing output failed")
-
-    return output_image, scamp_data, sextractor_data
+    return combined_image, scamp_data, sextractor_data
