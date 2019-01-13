@@ -28,7 +28,8 @@ def astroref_and_or_reduce(bads: Iterable[str],
             output=flags.output,
             filter_letter=flags.filter[0],
             combine='average' if flags.average else 'median',
-            skyscale_method='subtract' if flags.subtract else 'divide')
+            skyscale_method='subtract' if flags.subtract else 'divide',
+            scamp_wdir=flags.wdir)
     # register=flags.register_images,
     # verbosity=flags.verbose,
     # force=flags.force)
@@ -64,7 +65,7 @@ def do_only_astroref(args: argparse.Namespace):
     if not len(args.output) == len(args.images):
         raise ValueError('Need the same amount of images and output filenames')
 
-    ir_reduce.do_only_astroref(args.images, args.output)
+    ir_reduce.do_only_astroref(args.images, args.output, args.wdir)
 
 
 def do_discover(args: argparse.Namespace):
@@ -103,6 +104,8 @@ parser.add_argument('-r', '--register-images', action='store_true',
 parser.add_argument('--filter', '-fl', nargs=1, default='J', help='What image filter do we want to process?')
 parser.add_argument('--no-ref', '-n', action='store_true', default=False,
                     help='the output image won\'t be astroreferenced')
+parser.add_argument('--wdir', '-wd', nargs='?', default='',
+                    help='working directory for scamp/sextractor if you want to keep intermediate files')
 
 parser.add_argument('--verbose', '-v', action='count', default=0, help='No effect yet')
 parser.add_argument('--version', action='version', version=VERSION)
@@ -138,6 +141,9 @@ sub_parser.add_argument('-i', '--images', metavar='images', nargs='+', type=str,
 sub_parser.add_argument('-o', '--output', nargs='+', type=str, default=[output_default],
                         help='output file(s) to write to, default: reduced.fits, can use @textfile')
 sub_parser.set_defaults(func=do_only_astroref)
+
+
+# sub_parser = sub_parsers.add_parser('transient', aliases=['t'], help='perform some transient detection by comparing reduced image to reference catalogue')
 
 
 def cli_main():

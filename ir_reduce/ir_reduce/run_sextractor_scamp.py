@@ -28,14 +28,17 @@ class Config:
         self.sextractor_outfile = 'sexout.fits'
         self.sex_cmd = 'sex'
         self.scamp_cmd = 'scamp'
+        self.sextractor_conv = 'default.conv'
 
     @staticmethod
     def default():
         return Config()
 
 
+
 def astroreff_files(input_files: List[str], config: Config = Config.default()) -> None:
     """
+    TODO currently unused, could be merged with main.do_only_astroref
     Runs SExtractor and scamp on the given files to astroreference
     :param input_files: List of files to astroreference
     :param config: configuration object for scamp/sextractor
@@ -47,7 +50,7 @@ def astroreff_files(input_files: List[str], config: Config = Config.default()) -
 
 def astroref_file(input_path: str, output_path: str, config: Config = Config.default()) -> str:
     """
-
+    TODO currently unused, could be merged with main.do_only_astroref
     :param input_path:
     :param output_path:
     :param config: configuration object for scamp/sextractor
@@ -135,7 +138,11 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
     working_dir = working_dir if working_dir else tmpdir_pin.name  # gets deleted automatically
 
     shutil.copy(config.sextractor_param, working_dir)
-    open(os.path.join(working_dir, 'default.conv'), 'a').close()  # touch #TODO make configurable? Convolves image in sextractor with filter
+
+    if not os.path.exists(config.sextractor_conv):
+        open(os.path.join(working_dir, config.sextractor_conv), 'a').close()
+    else:
+        shutil.copy(config.sextractor_conv, working_dir)
 
     if isinstance(input_data, CCDData):
         fname = os.path.join(working_dir, 'sextractorInput.fits')
