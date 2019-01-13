@@ -7,7 +7,7 @@ import warnings
 from functools import reduce
 from multiprocessing import Pool, \
     cpu_count  # creating a global pool does not work as the workers import this exact file,
-from typing import List, Tuple, Iterable, Union, Dict
+from typing import List, Tuple, Iterable, Union, Dict, Sequence
 
 import astropy
 import astropy.io.fits as fits
@@ -296,6 +296,19 @@ def interpolate(img: CCDData):
 
     return img
 
+
+def write_output(output: str, reffed_image:CCDData, scamp_data, sextractor_data):
+    output, ext = os.path.splitext(output)
+    with open(output + '_scamp.head', 'w') as f:
+        f.write(scamp_data)
+    with open(output + '_sextractor.fits', 'wb') as f:
+        f.write(sextractor_data)
+    try:
+        reffed_image.write(output+ext, overwrite='True')
+    except OSError as err:
+        print(err, "writing output failed")
+
+
 def do_everything(bads: Iterable[str],
                   flats: Iterable[str],
                   images: Iterable[str],
@@ -308,16 +321,17 @@ def do_everything(bads: Iterable[str],
     reffed_image, scamp_data, sextractor_data = do_astroref(reduced_image)
 
     if output:
-        with open(output + '_scamp.head', 'w') as f:
-            f.write(scamp_data)
-        with open(output + '_sextractor.fits', 'wb') as f:
-            f.write(sextractor_data)
-        try:
-            reffed_image.write(output, overwrite='True')
-        except OSError as err:
-            print(err, "writing output failed")
+        write_output(output,reffed_image,scamp_data,sextractor_data)
 
     return reffed_image, scamp_data, sextractor_data
+
+
+def only_astroreff(images: Sequence[str], output: Sequence[str]):
+    for image, outname in zip(images, output):
+        read_image = astropy.nddata.CCDData.read(image)
+        reffed_image, scamp_data, sextractor_data = do_astroref(read_image)
+        write_output(outname, reffed_image, scamp_data, sextractor_data)
+
 
 
 def do_reduce(bads: Iterable[str],
@@ -372,7 +386,7 @@ def do_reduce(bads: Iterable[str],
         return output_image
 
 
-def do_astroref(combined_image:CCDData):
+def do_astroref(combined_image: CCDData):
     # The output has 3 hdus: image and error/mask. This confuses scamp, so only take the image to feed it to scamp
     first_hdu = combined_image.to_hdu()[0]
     scamp_input = CCDData(first_hdu.data, header=first_hdu.header, unit=first_hdu.header['bunit'])
