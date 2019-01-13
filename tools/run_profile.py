@@ -24,7 +24,7 @@ ir_reduce.do_everything(['../testdata/bad_cold5.fits', '../testdata/bad_hot2.fit
      "../testdata/NCAc070885.fits", "../testdata/NCAc070886.fits", "../testdata/NCAc070887.fits", "../testdata/NCAc070888.fits",
      "../testdata/NCAc070889.fits", "../testdata/NCAc070890.fits",
      "../testdata/NCAc070891.fits"],
-                        output=False)
+                        output="")
 
 pr.disable()
 pr.dump_stats('multicore.stats')
@@ -52,7 +52,7 @@ ir_reduce.do_everything(['../testdata/bad_cold5.fits', '../testdata/bad_hot2.fit
      "../testdata/NCAc070885.fits", "../testdata/NCAc070886.fits", "../testdata/NCAc070887.fits", "../testdata/NCAc070888.fits",
      "../testdata/NCAc070889.fits", "../testdata/NCAc070890.fits",
      "../testdata/NCAc070891.fits"],
-                        output=False)
+                        output="")
 prsingle.disable()
 prsingle.dump_stats('singlecore.stats')
 convert(prsingle.getstats(), 'singlecore.kgrind')

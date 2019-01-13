@@ -26,7 +26,7 @@ def test_roundtrip():
     args = parser.parse_args(['m', '-o','out.fits', '-b', 'bad1', '-f', 'flat1', '-i', 'im1'])
     assert args.func == cli.do_manual
     mock_reduce = mock.Mock()
-    with mock.patch('ir_reduce.cli.call_reduce', mock_reduce):
+    with mock.patch('ir_reduce.cli.astroref_and_or_reduce', mock_reduce):
         args.func(args)
 
     mock_reduce.assert_called()
@@ -35,7 +35,7 @@ def test_roundtrip():
     args = parser.parse_args(['d', '-o', 'out.fits', 'mydir'])
     assert args.func == cli.do_discover
     mock_reduce, mock_discover = mock.Mock(), mock.Mock()
-    with mock.patch('ir_reduce.cli.call_reduce', mock_reduce), mock.patch('ir_reduce.image_discovery.discover', mock_discover):
+    with mock.patch('ir_reduce.cli.astroref_and_or_reduce', mock_reduce), mock.patch('ir_reduce.image_discovery.discover', mock_discover):
         mock_discover.return_value = (1, 2, 3)
         args.func(args)
 
@@ -67,7 +67,7 @@ def test_at_syntax():
         args = parser.parse_args(['m', '-o', 'out.fits', '-b', f'@{bad}', '-f', f'@{flat}', '-i', f'@{im}'])
 
         mock_reduce = mock.Mock()
-        with mock.patch('ir_reduce.cli.call_reduce', mock_reduce):
+        with mock.patch('ir_reduce.cli.astroref_and_or_reduce', mock_reduce):
             args.func(args)
         absp = os.path.abspath
         mock_reduce.assert_called_with([absp('bad'), absp('bar')],
@@ -84,7 +84,7 @@ def test_astroref_only():
 
 
     mock_aref = mock.Mock()
-    with mock.patch('ir_reduce.only_astroreff', mock_aref):
+    with mock.patch('ir_reduce.do_only_astroref', mock_aref):
         args.func(args)
 
     mock_aref.assert_called_with([os.path.abspath('in.fits')], mock.ANY)

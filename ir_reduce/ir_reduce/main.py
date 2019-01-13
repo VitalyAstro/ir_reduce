@@ -3,7 +3,6 @@ Module for reducing infrared Data, currently for NOTCam but intended for a futur
 """
 import itertools
 import os
-import warnings
 from functools import reduce
 from multiprocessing import Pool, \
     cpu_count  # creating a global pool does not work as the workers import this exact file,
@@ -25,22 +24,28 @@ from .run_sextractor_scamp import run_astroref as run_scamp
 # causing infinite loops/import errors. Moving invoked functions out of this file should solve the issue
 n_cpu = cpu_count()
 
+
 class PoolDummy:
     """overwrite multiprocessing.Pool with this to make it single threaded"""
-    def __init__(self,*args):
+
+    def __init__(self, *_):
         self.starmap = itertools.starmap
         self.map = map
-    def map_async(self,fun,iterable):
+
+    def map_async(self, fun, iterable):
         class get_returner:
-            def __init__(self,fun,iterable):
-                self.fun =fun
+            def __init__(self, fun, iterable):
+                self.fun = fun
                 self.iterable = iterable
+
             def get(self):
-                return map(self.fun,self.iterable)
-        return get_returner(fun,iterable)
+                return map(self.fun, self.iterable)
+
+        return get_returner(fun, iterable)
 
     def close(self):
         pass
+
     def join(self):
         pass
 
@@ -67,7 +72,7 @@ def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable
     # TODO move asserts into unit-test or introduce a validation flag/wrapper
     for path in itertools.chain(bads, flats, exposures):
         if not os.path.isfile(path):
-            assert False, 'path '+path+' does not seem to exist'
+            assert False, 'path ' + path + ' does not seem to exist'
 
     image_promise = pool.map_async(astropy.nddata.CCDData.read, exposures)
     flat_promise = pool.map_async(astropy.nddata.CCDData.read, flats)
@@ -118,7 +123,7 @@ def single_reduction(image, bad, flat):
 
 
 def standard_process(bads: List[CCDData], flat: CCDData, images: List[CCDData],
-                     pool: Union[PoolDummy, Pool]=PoolDummy()) -> List[CCDData]:
+                     pool: Union[PoolDummy, Pool] = PoolDummy()) -> List[CCDData]:
     """
     Do the ccdproc operation on a list of images. includes some extra logic for NOTCAM images to get the
     gain and readnoise out of the headers
@@ -172,7 +177,8 @@ def tiled_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) -> 
         reduceds.append(reduced)
     return reduceds
 
-def subtract(a,b):
+
+def subtract(a, b):
     return a.subtract(b)
 
 
@@ -191,18 +197,18 @@ def skyscale(image_list: Iterable[CCDData], method: str = 'subtract',
     filtered_data = pool.map(sigma_clip, (image.data for image in image_list))
 
     medians = np.array(list(pool.map(np.median, (data[cut] for data in filtered_data))))
-    #airmass = sum((image.header['AIRMASS'] for image in image_list))  # TODO needed?
+    # airmass = sum((image.header['AIRMASS'] for image in image_list))  # TODO needed?
 
     # TODO from original code:
     # Calculate scaling relatively to last image median
     # Why not average or median-median?
     if method == 'subtract':
         medians = (medians - medians[-1]) * u.electron
-        #ret = [CCDData.subtract(image, median * u.electron) for image, median in zip(image_list, medians)]
+        # ret = [CCDData.subtract(image, median * u.electron) for image, median in zip(image_list, medians)]
         ret = pool.starmap(subtract, zip(image_list, medians))
     elif method == 'divide':
         medians = (medians / medians[-1]) * u.electron
-        #ret = [CCDData.subtract(image, median * u.electron) for image, median in zip(image_list, medians)]
+        # ret = [CCDData.subtract(image, median * u.electron) for image, median in zip(image_list, medians)]
         ret = pool.starmap(subtract, zip(image_list, medians))
     else:
         raise ValueError('method needs to be either subtract or divide')
@@ -277,7 +283,6 @@ def interpolate(img: CCDData):
     Takes a image with a mask for bad pixels and interpolates over the bad pixels
 
     :param img: the image you want to interpolate bad pixels in
-    :param dofixpix: use the fixpix-algorithm?
     :return: interpolated image
 
     """
@@ -297,56 +302,67 @@ def interpolate(img: CCDData):
     return img
 
 
-def write_output(output: str, reffed_image:CCDData, scamp_data, sextractor_data):
+def write_output(output: str, reffed_image: CCDData, scamp_data, sextractor_data):
     output, ext = os.path.splitext(output)
-    with open(output + '_scamp.head', 'w') as f:
-        f.write(scamp_data)
-    with open(output + '_sextractor.fits', 'wb') as f:
-        f.write(sextractor_data)
-    try:
-        reffed_image.write(output+ext, overwrite='True')
-    except OSError as err:
-        print(err, "writing output failed")
+    if scamp_data:
+        with open(output + '_scamp.head', 'w') as f:
+            f.write(scamp_data)
+    if sextractor_data:
+        with open(output + '_sextractor.fits', 'wb') as f:
+            f.write(sextractor_data)
+    if output:
+        try:
+            reffed_image.write(output + ext, overwrite='True')
+        except OSError as err:
+            print(err, "writing output failed")
 
 
 def do_everything(bads: Iterable[str],
                   flats: Iterable[str],
                   images: Iterable[str],
-                  output: Union[str, bool],
+                  output: str,
                   filter_letter: str = 'J',  # TODO: allow 'all'
                   combine: str = 'median',
                   skyscale_method: str = 'subtract'):
-
-    reduced_image = do_reduce(bads,flats,images,filter_letter,combine,skyscale_method)
-    reffed_image, scamp_data, sextractor_data = do_astroref(reduced_image)
+    reduced_image = reduce_image(bads, flats, images, filter_letter, combine, skyscale_method)
+    reffed_image, scamp_data, sextractor_data = astroref(reduced_image)
 
     if output:
-        write_output(output,reffed_image,scamp_data,sextractor_data)
+        write_output(output, reffed_image, scamp_data, sextractor_data)
 
     return reffed_image, scamp_data, sextractor_data
 
 
-def only_astroreff(images: Sequence[str], output: Sequence[str]):
+def do_only_astroref(images: Sequence[str], output: Sequence[str]):
     for image, outname in zip(images, output):
         read_image = astropy.nddata.CCDData.read(image)
-        reffed_image, scamp_data, sextractor_data = do_astroref(read_image)
+        reffed_image, scamp_data, sextractor_data = astroref(read_image)
         write_output(outname, reffed_image, scamp_data, sextractor_data)
 
 
+def do_only_reduce(bads: Iterable[str],
+                   flats: Iterable[str],
+                   images: Iterable[str],
+                   output: str,
+                   filter_letter: str = 'J',  # TODO: allow 'all'
+                   combine: str = 'median',
+                   skyscale_method: str = 'subtract'):
+    reduced_image = reduce_image(bads, flats, images, filter_letter, combine, skyscale_method)
+    write_output(output, reduced_image, None, None)
 
-def do_reduce(bads: Iterable[str],
-                  flats: Iterable[str],
-                  images: Iterable[str],
-                  filter_letter: str = 'J',  # TODO: allow 'all'
-                  combine: str = 'median',
-                  skyscale_method: str = 'subtract') -> CCDData:
+
+def reduce_image(bads: Iterable[str],
+                 flats: Iterable[str],
+                 images: Iterable[str],
+                 filter_letter: str = 'J',  # TODO: allow 'all'
+                 combine: str = 'median',
+                 skyscale_method: str = 'subtract') -> CCDData:
     """
     Take a list of files for badPixel, flatfield and exposures + a bunch of processing parameters and reduce them
     to write an output filec
     :param bads: list of paths to bad pixel frames
     :param flats: list of paths to flat frames
     :param images: list of paths to images
-    :param output: Path to write output image to. No output if false-y
     :param filter_letter: which spectral band to look at
     :param combine: either 'median' or 'average'
     :param skyscale_method: either 'subtract' or 'divide'
@@ -386,7 +402,7 @@ def do_reduce(bads: Iterable[str],
         return output_image
 
 
-def do_astroref(combined_image: CCDData):
+def astroref(combined_image: CCDData):
     # The output has 3 hdus: image and error/mask. This confuses scamp, so only take the image to feed it to scamp
     first_hdu = combined_image.to_hdu()[0]
     scamp_input = CCDData(first_hdu.data, header=first_hdu.header, unit=first_hdu.header['bunit'])
