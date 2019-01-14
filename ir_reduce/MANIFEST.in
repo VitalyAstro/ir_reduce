@@ -10,6 +10,7 @@ include ir_reduce/*.param
 include ir_reduce/*.py
 include *.py
 include pytest.ini
+include ir_reduce/*.nnw
 
 recursive-include docs *.py
 recursive-include docs *.rst
