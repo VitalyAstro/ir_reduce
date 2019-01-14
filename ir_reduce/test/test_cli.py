@@ -72,7 +72,7 @@ def test_at_syntax():
         absp = os.path.abspath
         mock_reduce.assert_called_with([absp('bad'), absp('bar')],
                                        [absp('flat'), absp('foo')],
-                                       [absp('im'), absp('baz')], mock.ANY)
+                                       [absp('im'), absp('baz')], mock.ANY, mock.ANY)
 
 
 
@@ -87,9 +87,24 @@ def test_astroref_only():
     with mock.patch('ir_reduce.do_only_astroref', mock_aref):
         args.func(args)
 
-    mock_aref.assert_called_with([os.path.abspath('in.fits')], mock.ANY)
+    mock_aref.assert_called_with([os.path.abspath('in.fits')], mock.ANY, mock.ANY)
 
     args = parser.parse_args(['astroref', '-o', 'out.fits', '-i', 'a', 'b'])
     # check if mismatch between in/out arglength causes error
     with pytest.raises(ValueError):
         args.func(args)
+
+
+def test_astromatic_config_overrides():
+    parser = cli.parser
+    args = parser.parse_args(['astroref', '-i' 'infile', '--sextractor-config', 'sex.cfg',
+                              '--sextractor-params', 'sex.param', '--scamp-config', 'scamp.cfg',
+                              '--sextractor-overrides', 'A=B',
+                              '--scamp-overrides', 'A=B', 'B=B'])
+
+    with mock.patch('os.path.exists', lambda x: True):  # maybe wasn't smart to have parsing and validation in same func
+        cfg = cli.parse_astromatic_config(args)
+
+    assert(cfg.scamp_overrides == ['A=B', 'B=B'])
+    assert(cfg.sextractor_overrides == ['A=B'])
+    pass

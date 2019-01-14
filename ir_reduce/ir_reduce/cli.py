@@ -4,8 +4,9 @@ import logging
 import os
 from textwrap import dedent
 from typing import Iterable, Any, Sequence
-
 import ir_reduce
+
+import ir_reduce.run_sextractor_scamp
 
 # todo tmp
 logging.getLogger().setLevel(logging.DEBUG)
@@ -18,7 +19,8 @@ output_default = 'reduced.fits'
 def astroref_and_or_reduce(bads: Iterable[str],
                            flats: Iterable[str],
                            images: Iterable[str],
-                           flags: argparse.Namespace) -> None:
+                           flags: argparse.Namespace,
+                           astromatic_cfg: ir_reduce.run_sextractor_scamp.Config) -> None:
     if flags.no_ref:
         to_call = ir_reduce.do_only_reduce
     else:
@@ -29,7 +31,7 @@ def astroref_and_or_reduce(bads: Iterable[str],
             filter_letter=flags.filter[0],
             combine='average' if flags.average else 'median',
             skyscale_method='subtract' if flags.subtract else 'divide',
-            scamp_wdir=flags.wdir)
+            astromatic_cfg=astromatic_cfg)
     # register=flags.register_images,
     # verbosity=flags.verbose,
     # force=flags.force)
@@ -52,7 +54,9 @@ def do_manual(args: argparse.Namespace):
     args.bad = extract_textfile_if_present(args.bad)
     args.flat = extract_textfile_if_present(args.flat)
 
-    return astroref_and_or_reduce(args.bad, args.flat, args.images, args)
+    astromatic_cfg = parse_astromatic_config(args)
+
+    return astroref_and_or_reduce(args.bad, args.flat, args.images, args, astromatic_cfg)
 
 
 def do_only_astroref(args: argparse.Namespace):
@@ -65,7 +69,9 @@ def do_only_astroref(args: argparse.Namespace):
     if not len(args.output) == len(args.images):
         raise ValueError('Need the same amount of images and output filenames')
 
-    ir_reduce.do_only_astroref(args.images, args.output, args.wdir)
+    astromatic_cfg = parse_astromatic_config(args)
+
+    ir_reduce.do_only_astroref(args.images, args.output, astromatic_cfg)
 
 
 def do_discover(args: argparse.Namespace):
@@ -82,12 +88,30 @@ def do_discover(args: argparse.Namespace):
             logging.warning('Exiting...')
             exit(0)
 
-    return astroref_and_or_reduce(bads, flats, images, args)
+    astromatic_cfg = parse_astromatic_config(args)
+
+    return astroref_and_or_reduce(bads, flats, images, args, astromatic_cfg)
 
 
-# noinspection
-def do_nothing(_: Any) -> None:
+def do_nothing(*_: Any) -> None:
     pass
+
+
+def parse_astromatic_config(args: argparse.Namespace) -> ir_reduce.run_sextractor_scamp.Config:
+    cfg = ir_reduce.run_sextractor_scamp.Config.default()
+
+    for filelist in (args.sextractor_config, args.sextractor_params, args.scamp_config):
+        if not os.path.exists(filelist[0]):
+            raise ValueError("File "+filelist[0]+" not found")
+
+    cfg.sextractor_config = os.path.abspath(args.sextractor_config[0])
+    cfg.sextractor_params = os.path.abspath(args.sextractor_params[0])
+    cfg.scamp_config = os.path.abspath(args.scamp_config[0])
+    cfg.scamp_overrides = args.scamp_overrides
+    cfg.sextractor_overrides = args.sextractor_overrides
+
+    return cfg
+
 
 
 parser = argparse.ArgumentParser(description='Reduction toolchain',
@@ -104,18 +128,31 @@ parser.add_argument('-r', '--register-images', action='store_true',
 parser.add_argument('--filter', '-fl', nargs=1, default='J', help='What image filter do we want to process?')
 parser.add_argument('--no-ref', '-n', action='store_true', default=False,
                     help='the output image won\'t be astroreferenced')
-parser.add_argument('--wdir', '-wd', nargs='?', default='',
-                    help='working directory for scamp/sextractor if you want to keep intermediate files')
 
 parser.add_argument('--verbose', '-v', action='count', default=0, help='No effect yet')
 parser.add_argument('--version', action='version', version=VERSION)
 
 parser.set_defaults(func=do_nothing)
 
+def add_astromatic_params(parser):
+    astromatic_cfg = ir_reduce.run_sextractor_scamp.Config.default()
+    parser.add_argument('--sextractor-config','-sexc', nargs=1, type=str, default=[astromatic_cfg.sextractor_config],
+                        help='override inbuilt source extractor config file')
+    parser.add_argument('--sextractor-params','-sexp', nargs=1, type=str, default=[astromatic_cfg.sextractor_param],
+                        help='override inbuilt source extractor parameter file')
+    parser.add_argument('--scamp-config', '-sconf', nargs=1, type=str, default=[astromatic_cfg.scamp_config],
+                        help='override inbuilt scamp config file')
+    parser.add_argument('--wdir', '-wd', nargs=1, default=[astromatic_cfg.working_dir],
+                        help='working directory for scamp/sextractor if you want to keep intermediate files')
+    parser.add_argument('--scamp-overrides', '-sco', nargs='+', default=astromatic_cfg.scamp_overrides, type=str,
+                        help='override configuration values for scamp as "KEY0=VAL0 KEY1=VAL1"')
+    parser.add_argument('--sextractor-overrides', '-sexo', nargs='+',
+                        default=astromatic_cfg.sextractor_overrides, type=str,
+                        help='override configuration values for source extractor as "KEY0=VAL0 KEY1=VAL1"')
+
 sub_parsers = parser.add_subparsers(title='subcommands', description='', help='sub commands')
 
 sub_parser = sub_parsers.add_parser('manual', aliases=['m'], help='Specify paths to images yourself')
-
 sub_parser.add_argument('-f', '--flat', required=True, metavar='flatfield', nargs='+', type=str,
                         help='Flat field image. Can specify in textfile and pass @textfile')
 sub_parser.add_argument('-b', '--bad', required=True, metavar='badPixelMap', nargs='+', type=str,
@@ -124,6 +161,7 @@ sub_parser.add_argument('-i', '--images', required=True, metavar='image', nargs=
                         help='the images you want to combine. Can specify in textfile and pass @textfile')
 sub_parser.add_argument('-o', '--output', nargs='?', type=str, default=output_default,
                         help='output file to write to, default: reduced.fits')
+add_astromatic_params(sub_parser)
 sub_parser.set_defaults(func=do_manual)
 
 sub_parser = sub_parsers.add_parser('discover', aliases=['d'], help='Discover images in optionally specified directory')
@@ -132,6 +170,7 @@ sub_parser.add_argument('folder', nargs='?', type=str, default=os.getcwd(),
 sub_parser.add_argument('-c', '--confirm', action='store_true', help='Confirm file selection')
 sub_parser.add_argument('-o', '--output', nargs='?', type=str, default=output_default,
                         help='output file to write to, default: reduced.fits')
+add_astromatic_params(sub_parser)
 sub_parser.set_defaults(func=do_discover)
 
 sub_parser = sub_parsers.add_parser('astroref', aliases=['ref'],
@@ -140,6 +179,7 @@ sub_parser.add_argument('-i', '--images', metavar='images', nargs='+', type=str,
                         help='image(s) to astroreff. Can use @textfile')
 sub_parser.add_argument('-o', '--output', nargs='+', type=str, default=[output_default],
                         help='output file(s) to write to, default: reduced.fits, can use @textfile')
+add_astromatic_params(sub_parser)
 sub_parser.set_defaults(func=do_only_astroref)
 
 

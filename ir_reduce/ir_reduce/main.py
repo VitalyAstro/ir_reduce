@@ -19,7 +19,7 @@ from astropy.stats import SigmaClip
 from numpy import s_  # numpy helper to create slices by indexing this
 
 from .image_discovery import ImageGroup
-from .run_sextractor_scamp import run_astroref
+from .run_sextractor_scamp import run_astroref, Config
 
 # causing infinite loops/import errors. Moving invoked functions out of this file should solve the issue
 n_cpu = cpu_count()
@@ -324,9 +324,9 @@ def do_everything(bads: Iterable[str],
                   filter_letter: str = 'J',  # TODO: allow 'all'
                   combine: str = 'median',
                   skyscale_method: str = 'subtract',
-                  scamp_wdir: str = ''):
+                  astromatic_cfg: Config = Config.default()):
     reduced_image = reduce_image(bads, flats, images, filter_letter, combine, skyscale_method)
-    reffed_image, scamp_data, sextractor_data = astroref(reduced_image, working_directory=scamp_wdir)
+    reffed_image, scamp_data, sextractor_data = astroref(reduced_image, config=astromatic_cfg)
 
     if output:
         write_output(output, reffed_image, scamp_data, sextractor_data)
@@ -334,10 +334,10 @@ def do_everything(bads: Iterable[str],
     return reffed_image, scamp_data, sextractor_data
 
 
-def do_only_astroref(images: Sequence[str], output: Sequence[str], working_directory: str = ''):
+def do_only_astroref(images: Sequence[str], output: Sequence[str], astromatic_cfg:Config):
     for image, outname in zip(images, output):
         read_image = astropy.nddata.CCDData.read(image)
-        reffed_image, scamp_data, sextractor_data = astroref(read_image, working_directory)
+        reffed_image, scamp_data, sextractor_data = astroref(read_image, astromatic_cfg)
         write_output(outname, reffed_image, scamp_data, sextractor_data)
 
 
@@ -403,11 +403,11 @@ def reduce_image(bads: Iterable[str],
         return output_image
 
 
-def astroref(combined_image: CCDData, working_directory=''):
+def astroref(combined_image: CCDData, config: Config):
     # The output has 3 hdus: image and error/mask. This confuses scamp, so only take the image to feed it to scamp
     first_hdu = combined_image.to_hdu()[0]
     scamp_input = CCDData(first_hdu.data, header=first_hdu.header, unit=first_hdu.header['bunit'])
-    scamp_data, sextractor_data = run_astroref(scamp_input, working_directory=working_directory)
+    scamp_data, sextractor_data = run_astroref(scamp_input, config=config)
 
     # PV?_? (distortion) entries are not handled well by wcslib and by extension astropy.
     # just Remove them as a workaround

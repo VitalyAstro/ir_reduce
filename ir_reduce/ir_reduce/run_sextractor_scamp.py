@@ -25,10 +25,14 @@ class Config:
         self.sextractor_param = os.path.join(this_dir, 'default.param')
         self.sextractor_config = os.path.join(this_dir, 'sex.config')
         self.scamp_config = os.path.join(this_dir, 'scamp.config')
+        self.working_dir = ''
         self.sextractor_outfile = 'sexout.fits'
         self.sex_cmd = 'sex'
         self.scamp_cmd = 'scamp'
         self.sextractor_conv = 'default.conv'
+
+        self.sextractor_overrides = ['']
+        self.scamp_overrides = ['']
 
     @staticmethod
     def default():
@@ -119,7 +123,7 @@ def is_config_valid(config: Config) -> bool:
     return valid
 
 
-def run_astroref(input_data: Union[str, CCDData], config: Config = Config.default(), working_dir: str = '',
+def run_astroref(input_data: Union[str, CCDData], config: Config = Config.default(),
                  verbose: int = 1) -> Tuple[str, bytes]:
     """
     TODO maybe wrapper that writes out strings and CCDData to files so that this function can only work with FS data
@@ -132,10 +136,10 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
     """
 
     if not is_config_valid(config):
-        raise ValueError()
+        raise ValueError("Errors found in scamp/source extractor configuration")
 
     tmpdir_pin = tempfile.TemporaryDirectory()
-    working_dir = working_dir if working_dir else tmpdir_pin.name  # gets deleted automatically
+    working_dir = config.working_dir if config.working_dir else tmpdir_pin.name  # gets deleted automatically
 
     shutil.copy(config.sextractor_param, working_dir)
 

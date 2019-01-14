@@ -116,12 +116,14 @@ class TestRun:
             mock_run.run.return_value = mock_process
             mock_process.returncode = 0
 
+            config.working_dir = tmpdir
+
             with open(os.path.join(tmpdir, config.sextractor_outfile), 'w') as sexout:
                 sexout.write('foo')
             with open(os.path.join(tmpdir, config.sextractor_outfile.replace('.fits', '.head')), 'w') as scampout:
                 scampout.write('bar')
             # test run
-            scamp_data, sex_data = run_astroref('dummyFilename', config, working_dir=tmpdir)
+            scamp_data, sex_data = run_astroref('dummyFilename', config)
             assert 'bar' == scamp_data
             assert b'foo' == sex_data
 
