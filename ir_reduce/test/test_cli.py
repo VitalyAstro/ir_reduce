@@ -36,7 +36,7 @@ def test_roundtrip():
     assert args.func == cli.do_discover
     mock_reduce, mock_discover = mock.Mock(), mock.Mock()
     with mock.patch('ir_reduce.cli.astroref_and_or_reduce', mock_reduce), mock.patch('ir_reduce.image_discovery.discover', mock_discover):
-        mock_discover.return_value = (1, 2, 3)
+        mock_discover.return_value = ([1], [2], [3])
         args.func(args)
 
     mock_discover.assert_called()

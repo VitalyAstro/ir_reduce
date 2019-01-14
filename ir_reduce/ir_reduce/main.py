@@ -302,7 +302,7 @@ def interpolate(img: CCDData):
     return img
 
 
-def write_output(output: str, reffed_image: CCDData, scamp_data, sextractor_data):
+def write_output(output: str, reffed_image: CCDData, scamp_data, sextractor_data, reference_catalog_data):
     output, ext = os.path.splitext(output)
     if scamp_data:
         with open(output + '_scamp.head', 'w') as f:
@@ -310,6 +310,9 @@ def write_output(output: str, reffed_image: CCDData, scamp_data, sextractor_data
     if sextractor_data:
         with open(output + '_sextractor.fits', 'wb') as f:
             f.write(sextractor_data)
+    if reference_catalog_data:
+        with open(output + '_reference.cat', 'wb') as f:
+            f.write(reference_catalog_data)
     if output:
         try:
             reffed_image.write(output + ext, overwrite='True')
@@ -326,10 +329,10 @@ def do_everything(bads: Iterable[str],
                   skyscale_method: str = 'subtract',
                   astromatic_cfg: Config = Config.default()):
     reduced_image = reduce_image(bads, flats, images, filter_letter, combine, skyscale_method)
-    reffed_image, scamp_data, sextractor_data = astroref(reduced_image, config=astromatic_cfg)
+    reffed_image, scamp_data, sextractor_data, reference_catalog_data = astroref(reduced_image, config=astromatic_cfg)
 
     if output:
-        write_output(output, reffed_image, scamp_data, sextractor_data)
+        write_output(output, reffed_image, scamp_data, sextractor_data, reference_catalog_data)
 
     return reffed_image, scamp_data, sextractor_data
 
@@ -337,8 +340,8 @@ def do_everything(bads: Iterable[str],
 def do_only_astroref(images: Sequence[str], output: Sequence[str], astromatic_cfg:Config):
     for image, outname in zip(images, output):
         read_image = astropy.nddata.CCDData.read(image)
-        reffed_image, scamp_data, sextractor_data = astroref(read_image, astromatic_cfg)
-        write_output(outname, reffed_image, scamp_data, sextractor_data)
+        reffed_image, scamp_data, sextractor_data, reference_catalog_data = astroref(read_image, astromatic_cfg)
+        write_output(outname, reffed_image, scamp_data, sextractor_data, reference_catalog_data)
 
 
 def do_only_reduce(bads: Iterable[str],
@@ -414,7 +417,7 @@ def astroref(combined_image: CCDData, config: Config):
     # The output has 3 hdus: image and error/mask. This confuses scamp, so only take the image to feed it to scamp
     first_hdu = combined_image.to_hdu()[0]
     scamp_input = CCDData(first_hdu.data, header=first_hdu.header, unit=first_hdu.header['bunit'])
-    scamp_data, sextractor_data = run_astroref(scamp_input, config=config)
+    scamp_data, sextractor_data, reference_catalog_data = run_astroref(scamp_input, config=config)
 
     # PV?_? (distortion) entries are not handled well by wcslib and by extension astropy.
     # just Remove them as a workaround
@@ -426,4 +429,4 @@ def astroref(combined_image: CCDData, config: Config):
     combined_image.header.update(scamp_header)
     combined_image.wcs = astropy.wcs.WCS(scamp_header)
 
-    return combined_image, scamp_data, sextractor_data
+    return combined_image, scamp_data, sextractor_data, reference_catalog_data

@@ -100,6 +100,12 @@ def do_discover(args: argparse.Namespace):
     return astroref_and_or_reduce(bads, flats, images, args, astromatic_cfg)
 
 
+def do_transient_detection(args: argparse.Namespace):
+    from ir_reduce.transient_detection import transient_detection
+
+    return transient_detection(args.sexout, args.refcat, args.image)
+
+
 def do_nothing(*_: Any) -> None:
     pass
 
@@ -114,8 +120,10 @@ def parse_astromatic_config(args: argparse.Namespace) -> ir_reduce.run_sextracto
     cfg.sextractor_config = os.path.abspath(args.sextractor_config[0])
     cfg.sextractor_params = os.path.abspath(args.sextractor_params[0])
     cfg.scamp_config = os.path.abspath(args.scamp_config[0])
+    cfg.working_dir = os.path.abspath(args.wdir[0])
     cfg.scamp_overrides = args.scamp_overrides
     cfg.sextractor_overrides = args.sextractor_overrides
+
 
     return cfg
 
@@ -188,6 +196,14 @@ sub_parser.add_argument('-o', '--output', nargs='+', type=str, default=[output_d
                         help='output file(s) to write to, default: reduced.fits, can use @textfile')
 add_astromatic_params(sub_parser)
 sub_parser.set_defaults(func=do_only_astroref)
+
+sub_parser = sub_parsers.add_parser('transient', aliases=['t'],
+                                    help='use a reduced and astroreferenced image, source extractor output and'
+                                         ' scamp reference cataloge to find divergences')
+sub_parser.add_argument('image')
+sub_parser.add_argument('sexout')
+sub_parser.add_argument('refcat')
+sub_parser.set_defaults(func=do_transient_detection)
 
 
 # sub_parser = sub_parsers.add_parser('transient', aliases=['t'], help='perform some transient detection by comparing reduced image to reference catalogue')

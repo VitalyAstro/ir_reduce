@@ -5,6 +5,7 @@ from typing import Union, Tuple, List, Dict
 from astropy.nddata.ccddata import CCDData
 import astropy.io.fits as fits
 import sys
+import glob
 import shutil
 
 """
@@ -24,6 +25,7 @@ class Config:
     def __init__(self):
         self.sextractor_param = os.path.join(this_dir, 'default.param')
         self.sextractor_config = os.path.join(this_dir, 'sex.config')
+        self.sextractor_neural = os.path.join(this_dir, 'default.nnw')
         self.scamp_config = os.path.join(this_dir, 'scamp.config')
         self.working_dir = ''
         self.sextractor_outfile = 'sexout.fits'
@@ -66,12 +68,14 @@ def astroref_file(input_path: str, output_path: str, config: Config = Config.def
 
     input_data = CCDData.read(input_path)
 
-    scamp_data, sextractor_data = run_astroref(input_data, config=config)
+    scamp_data, sextractor_data, reference_catalog_data = run_astroref(input_data, config=config)
 
     with open(ouput_path + 'scamp.head', 'w') as f:
         f.write(scamp_data)
     with open(ouput_path + '_sextractor.fits', 'wb') as f:
         f.write(sextractor_data)
+    with open(output_path + '_reference.cat', 'wb') as f:
+        f.write(reference_catalog_data)
 
     scamp_header = fits.Header.fromstring(scamp_data, sep='\n')
 
@@ -132,8 +136,9 @@ def split_overriders(overriders: List[str]) -> List[str]:
         ret.append(val)
     return ret
 
+
 def run_astroref(input_data: Union[str, CCDData], config: Config = Config.default(),
-                 verbose: int = 1) -> Tuple[str, bytes]:
+                 verbose: int = 1) -> Tuple[str, bytes, bytes]:
     """
     TODO maybe wrapper that writes out strings and CCDData to files so that this function can only work with FS data
 
@@ -141,7 +146,7 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
     :param config:
     :param working_dir:
     :param verbose:
-    :return: tuple(scamp_data, sextractor_data)
+    :return: tuple(scamp_data, sextractor_data,reference_catalog_data)
     """
 
     if not is_config_valid(config):
@@ -163,8 +168,11 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
     else:
         fname = os.path.abspath(input_data)
 
-    sex_process = sp.run([config.sex_cmd, fname, '-c', config.sextractor_config] + split_overriders(config.sextractor_overrides)
-                         , cwd=working_dir, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True, timeout=30)
+    sex_process = sp.run([config.sex_cmd, fname, '-c', config.sextractor_config,
+                          '-STARNNW_NAME', config.sextractor_neural] + split_overriders(config.sextractor_overrides),
+                          cwd=working_dir, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True, timeout=30)
+    if verbose:
+        print('running', sex_process.args, 'in', working_dir)
     if sex_process.returncode != 0:
         raise RuntimeError(
             f'''Sextractor failed to run
@@ -174,13 +182,15 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
             {sex_process.stderr}
             stdout:
             {sex_process.stdout}''')
-    elif verbose:
+    if verbose:
         print(sex_process.stdout)
         print(sex_process.stderr, file=sys.stdout)
 
     scamp_process = sp.run([config.scamp_cmd, config.sextractor_outfile, '-c', config.scamp_config]
                            + split_overriders(config.scamp_overrides),
                            cwd=working_dir,stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True, timeout=30)
+    if verbose:
+        print('running', scamp_process.args, 'in', working_dir)
     if scamp_process.returncode != 0:
         raise RuntimeError(
             f'''Scamp failed to run
@@ -190,7 +200,7 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
             {scamp_process.stderr}
             stdout:
             {scamp_process.stdout}''')
-    elif verbose:
+    if verbose:
         print(scamp_process.stdout)
         print(scamp_process.stderr, file=sys.stdout)
 
@@ -201,5 +211,7 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
         scamp_data = scamp_outfile.read()
     with open(os.path.join(working_dir, config.sextractor_outfile), 'rb') as f:
         sextractor_data = f.read()
+    with open(glob.glob(os.path.join(working_dir, '*.cat'))[0], 'rb') as f:
+        reference_catalog_data = f.read()
 
-    return scamp_data, sextractor_data
+    return scamp_data, sextractor_data, reference_catalog_data

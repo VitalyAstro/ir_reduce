@@ -122,8 +122,9 @@ class TestRun:
                 sexout.write('foo')
             with open(os.path.join(tmpdir, config.sextractor_outfile.replace('.fits', '.head')), 'w') as scampout:
                 scampout.write('bar')
+            open(os.path.join(tmpdir, 'foo.cat'), 'ab').close()
             # test run
-            scamp_data, sex_data = run_astroref('dummyFilename', config)
+            scamp_data, sex_data, reference_cat_data = run_astroref('dummyFilename', config)
             assert 'bar' == scamp_data
             assert b'foo' == sex_data
 
