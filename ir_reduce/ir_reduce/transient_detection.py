@@ -50,16 +50,16 @@ def transient_detection(sextractor_output: str, refcat: str, reffed_image: CCDDa
         else:
             ambig.append((row, gaia[candidate_idx]))
 
-    plt.scatter([d[0]['XWIN_IMAGE'] for d in distinct], [d[0]['YWIN_IMAGE'] for d in distinct], color='red')
-    plt.scatter([d[1]['X_IMAGE'] for d in distinct], [d[1]['Y_IMAGE'] for d in distinct], color='green')
+    #plt.scatter([d[0]['XWIN_IMAGE'] for d in distinct], [d[0]['YWIN_IMAGE'] for d in distinct], color='red')
+    #plt.scatter([d[1]['X_IMAGE'] for d in distinct], [d[1]['Y_IMAGE'] for d in distinct], color='green')
 
-    plt.scatter([d['XWIN_IMAGE'] for d in notfound], [d['YWIN_IMAGE'] for d in notfound], color='pink')
+    #plt.scatter([d['XWIN_IMAGE'] for d in notfound], [d['YWIN_IMAGE'] for d in notfound], color='pink')
 
     # plt.scatter(gaia['X_WORLD'], gaia['Y_WORLD'])
     # plt.scatter(sex_world[:, 0], sex_world[:, 1])
 
-    # plt.scatter(gaia_px[:, 0], gaia_px[:, 1])
-    # plt.scatter(sex['XWIN_IMAGE'],sex['YWIN_IMAGE'])
+    plt.scatter(gaia_px[:, 0], gaia_px[:, 1])
+    plt.scatter(sex['XWIN_IMAGE'],sex['YWIN_IMAGE'])
 
     plt.show()
     return sex, gaia

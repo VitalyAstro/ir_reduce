@@ -69,6 +69,12 @@ Discover all files in specified directory with filter Band J(default)
 Only astroreference H_pnv.fits
  `ir-reduce-cli ref -i H_pnv.fits`
 
+
+Reduce, astroreff images. Plot reference cataloge and source exctractor results
+ `mkdir wdir
+  ir-reduce-cli -v --filter J m -i ../NCAc0708*fits -f ../Flat* -b ../bad_*  --wdir wdir
+  ir-reduce-cli t reduced.fits wdir/sexout.fits wdir/GAIA-DR1_1726+4220_r4.cat`
+
 ### Usage from python
 run tests: `pytest`
 
