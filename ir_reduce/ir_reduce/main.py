@@ -135,7 +135,7 @@ def standard_process(bads: List[CCDData], flat: CCDData, images: List[CCDData],
     """
     bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads))  # combine bad pixel masks
 
-    return list(itertools.starmap(single_reduction, zip(images, itertools.repeat(bad), itertools.repeat(flat))))
+    return list(pool.starmap(single_reduction, zip(images, itertools.repeat(bad), itertools.repeat(flat))))
 
 
 def tiled_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) -> List[CCDData]:
