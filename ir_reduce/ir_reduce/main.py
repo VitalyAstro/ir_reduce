@@ -135,7 +135,7 @@ def standard_process(bads: List[CCDData], flat: CCDData, images: List[CCDData],
     """
     bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads))  # combine bad pixel masks
 
-    return list(pool.starmap(single_reduction, zip(images, itertools.repeat(bad), itertools.repeat(flat))))
+    return list(itertools.starmap(single_reduction, zip(images, itertools.repeat(bad), itertools.repeat(flat))))
 
 
 def tiled_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) -> List[CCDData]:
@@ -375,6 +375,13 @@ def reduce_image(bads: Iterable[str],
     # use pool as a context manager so that terminate() gets called automatically
     with Pool(n_cpu) as pool:
         read_files = read_and_sort(bads, flats, images, pool)[filter_letter]
+
+        if not (len(read_files.bad) > 0 and len(read_files.flat) > 0 and len(read_files.images) > 0):
+            raise ValueError('cannot continue, not enough data left after filtering data by available spectral band')
+        dimensions = read_files.bad[0].shape
+        for image in itertools.chain(read_files.bad,read_files.flat,read_files.images):
+            if not image.shape == dimensions:
+                raise ValueError('image dimension mismatch', image)
 
         # TODO distortion correct here
 

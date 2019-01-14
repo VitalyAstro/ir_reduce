@@ -123,6 +123,15 @@ def is_config_valid(config: Config) -> bool:
     return valid
 
 
+def split_overriders(overriders: List[str]) -> List[str]:
+    """['A=B','B=D'] -> ['-A','B','-B','D']"""
+    ret = []
+    for entry in filter(None, overriders):  # remove falsey entries, eg ''
+        key, val = entry.split('=')
+        ret.append('-'+key)
+        ret.append(val)
+    return ret
+
 def run_astroref(input_data: Union[str, CCDData], config: Config = Config.default(),
                  verbose: int = 1) -> Tuple[str, bytes]:
     """
@@ -154,9 +163,8 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
     else:
         fname = os.path.abspath(input_data)
 
-    sex_process = sp.run([config.sex_cmd, fname, '-c', config.sextractor_config], cwd=working_dir, stdout=sp.PIPE,
-                         stderr=sp.PIPE,
-                         universal_newlines=True, timeout=30)
+    sex_process = sp.run([config.sex_cmd, fname, '-c', config.sextractor_config] + split_overriders(config.sextractor_overrides)
+                         , cwd=working_dir, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True, timeout=30)
     if sex_process.returncode != 0:
         raise RuntimeError(
             f'''Sextractor failed to run
@@ -170,9 +178,9 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
         print(sex_process.stdout)
         print(sex_process.stderr, file=sys.stdout)
 
-    scamp_process = sp.run([config.scamp_cmd, config.sextractor_outfile, '-c', config.scamp_config], cwd=working_dir,
-                           stdout=sp.PIPE, stderr=sp.PIPE,
-                           universal_newlines=True, timeout=30)
+    scamp_process = sp.run([config.scamp_cmd, config.sextractor_outfile, '-c', config.scamp_config]
+                           + split_overriders(config.scamp_overrides),
+                           cwd=working_dir,stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True, timeout=30)
     if scamp_process.returncode != 0:
         raise RuntimeError(
             f'''Scamp failed to run

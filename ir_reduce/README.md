@@ -42,6 +42,10 @@ and return/write an astrometric solution
 * **scratch** contains experiments that use or where used to build the library. Don't expect to be able to run them
 but maybe they give some context/ideas
 
+* **tools** contains some scripts to create test images and profile a typical run of the reduction toolchain, profiler
+outputs gperf and kcachegrind compatible files
+
+
 ## Tests
 There are two kinds of tests: Unit tests that verify that a given function/unit works well and integration/end-to-end tests that work on real data.
 For them to work scamp and SExtractor must be installed, available as `scamp` and `sex` in the PATH and a directory "testdata" be present
@@ -52,10 +56,18 @@ that contains the "NCA*.fits" exposures "Flat[HJK].fits" and "bad_*.fits" bad pi
 the cli is installed as a script called "ir-reduce-cli". You can also run ir\_reduce/cli.py. Supports --help
 
 specify bad/flat/exposures manually:
-`ir-reduce-cli output.fits manual -f Flat* -b bad_* -e MYImages*.fits`
+`ir-reduce-cli manual -f Flat* -b bad_* -e MYImages*.fits` -o output.fits
 
-`manual` can be shortened to `m`. Discovery mode is still rather broken 
+`manual` can be shortened to `m`. Discovery mode is still a little experimental
 
+Discover all files in current directory with filter Band H
+`ir-reduce-cli --filter H d`
+
+Discover all files in specified directory with filter Band J(default)
+`ir-reduce-cli d /some/other/dir`
+
+Only astroreference H_pnv.fits
+ `ir-reduce-cli ref -i H_pnv.fits`
 
 ### Usage from python
 run tests: `pytest`

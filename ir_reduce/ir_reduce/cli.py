@@ -78,6 +78,13 @@ def do_discover(args: argparse.Namespace):
     from ir_reduce import image_discovery
     bads, flats, images = image_discovery.discover(args.folder)
 
+    if len(bads) == 0:
+        raise ValueError('No bad pixel map found')
+    if len(flats) == 0:
+        raise ValueError('No flatfield found')
+    if len(images) == 0:
+        raise ValueError('No images found')
+
     if args.verbose > 0 or args.confirm:
         logging.info(dedent(f"""\
         discovered the following files: Bad Pixel Maps: {bads}
