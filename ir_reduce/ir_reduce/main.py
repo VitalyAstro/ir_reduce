@@ -5,7 +5,7 @@ import itertools
 import os
 from functools import reduce
 from multiprocessing import Pool, \
-    cpu_count  # creating a global pool does not work as the workers import this exact file,
+    cpu_count
 from typing import List, Tuple, Iterable, Union, Dict, Sequence
 
 import astropy
@@ -21,16 +21,17 @@ from numpy import s_  # numpy helper to create slices by indexing this
 from .image_discovery import ImageGroup
 from .run_sextractor_scamp import run_astroref, Config
 
+
+n_cpu = cpu_count()  # creating a global pool here does not work as the workers import this exact file,
 # causing infinite loops/import errors. Moving invoked functions out of this file should solve the issue
-n_cpu = cpu_count()
 
 
 class PoolDummy:
     """overwrite multiprocessing.Pool with this to make it single threaded"""
 
     def __init__(self, *_):
-        self.starmap = itertools.starmap
-        self.map = map
+        self.starmap = lambda fun, iterable: list(itertools.starmap(fun, iterable))
+        self.map = lambda fun, iterable: list(map(fun, iterable))
 
     def map_async(self, fun, iterable):
         class get_returner:
@@ -39,7 +40,7 @@ class PoolDummy:
                 self.iterable = iterable
 
             def get(self):
-                return map(self.fun, self.iterable)
+                return list(map(self.fun, self.iterable))
 
         return get_returner(fun, iterable)
 
@@ -47,6 +48,11 @@ class PoolDummy:
         pass
 
     def join(self):
+        pass
+
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
 
