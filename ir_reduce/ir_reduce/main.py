@@ -56,7 +56,7 @@ class PoolDummy:
         pass
 
 
-# Globals: Fits-columns #todo: put in module
+# Globals: Fits-columns # todo: put in module
 filter_column = 'NCFLTNM2'  # TODO NOTCam-specific
 filter_vals = ('H', 'J', 'Ks')
 
