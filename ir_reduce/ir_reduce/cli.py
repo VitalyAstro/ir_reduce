@@ -7,6 +7,7 @@ from typing import Iterable, Any, Sequence
 import ir_reduce
 
 import ir_reduce.run_sextractor_scamp
+from .instrumentHeaderKeys import Band
 
 # todo tmp
 logging.getLogger().setLevel(logging.DEBUG)
@@ -28,7 +29,7 @@ def astroref_and_or_reduce(bads: Iterable[str],
 
     to_call(bads, flats, images,
             output=flags.output,
-            filter_letter=flags.filter[0],
+            band_id=Band[flags.filter[0]],
             combine='average' if flags.average else 'median',
             skyscale_method='subtract' if flags.subtract else 'divide',
             astromatic_cfg=astromatic_cfg)
@@ -124,9 +125,7 @@ def parse_astromatic_config(args: argparse.Namespace) -> ir_reduce.run_sextracto
     cfg.scamp_overrides = args.scamp_overrides
     cfg.sextractor_overrides = args.sextractor_overrides
 
-
     return cfg
-
 
 
 parser = argparse.ArgumentParser(description='Reduction toolchain',
@@ -140,7 +139,8 @@ group.add_argument('-s', '--subtract', action='store_true', help='skyscale image
 group.add_argument('-d', '--divide', action='store_true', default=True, help='skyscale images by division')
 parser.add_argument('-r', '--register-images', action='store_true',
                     help='[not implemented] images are aligned with cross correlation, not just based on WCS')
-parser.add_argument('--filter', '-fl', nargs=1, default='J', help='What image filter do we want to process?')
+parser.add_argument('--filter', '-fl', nargs=1, default='J',
+                    help='What image filter/spectral Band do we want to process?')
 parser.add_argument('--no-ref', '-n', action='store_true', default=False,
                     help='the output image won\'t be astroreferenced')
 
@@ -148,6 +148,7 @@ parser.add_argument('--verbose', '-v', action='count', default=0, help='No effec
 parser.add_argument('--version', action='version', version=VERSION)
 
 parser.set_defaults(func=do_nothing)
+
 
 def add_astromatic_params(parser):
     astromatic_cfg = ir_reduce.run_sextractor_scamp.Config.default()
@@ -164,6 +165,7 @@ def add_astromatic_params(parser):
     parser.add_argument('--sextractor-overrides', '-sexo', nargs='+',
                         default=astromatic_cfg.sextractor_overrides, type=str,
                         help='override configuration values for source extractor as "KEY0=VAL0 KEY1=VAL1"')
+
 
 sub_parsers = parser.add_subparsers(title='subcommands', description='', help='sub commands')
 

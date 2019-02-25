@@ -18,6 +18,8 @@ from astropy.nddata import CCDData
 from astropy.stats import SigmaClip
 from numpy import s_  # numpy helper to create slices by indexing this
 
+from .instrumentHeaderKeys import Category, image_category, Band, band
+
 from .image_discovery import ImageGroup
 from .run_sextractor_scamp import run_astroref, Config
 
@@ -57,15 +59,15 @@ class PoolDummy:
 
 
 # Globals: Fits-columns # todo: put in module
-filter_column = 'NCFLTNM2'  # TODO NOTCam-specific
-filter_vals = ('H', 'J', 'Ks')
-
-image_category = 'IMAGECAT'
-object_ID = 'OBJECT'
+# filter_column = 'NCFLTNM2'  # TODO NOTCam-specific
+# filter_vals = ('H', 'J', 'Ks')
+#
+# image_category = 'IMAGECAT'
+# object_ID = 'OBJECT'
 
 
 def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable[str],
-                  pool: Union[PoolDummy, Pool] = PoolDummy()) -> Dict[str, ImageGroup]:
+                  pool: Union[PoolDummy, Pool] = PoolDummy()) -> Dict[Band, ImageGroup]:
     """
     read in images and sort them by filter, return the CCDDatas
 
@@ -89,13 +91,13 @@ def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable
 
     ret = dict()
     # for all filter present in science data we need at least a flatImage and a bad pixel image
-    for filter_id in filter_vals:
+    for band_id in Band:
         try:
-            images_with_filter = [image for image in image_datas if image.header[filter_column] == filter_id]
+            images_with_filter = [image for image in image_datas if band(image) == band_id]
             # only science images allowed
-            assert (all((image.header[image_category] == 'SCIENCE' for image in images_with_filter)))
+            assert (all((image_category(image) == Category.SCIENCE for image in images_with_filter)))
 
-            flats_with_filter = [image for image in flat_datas if image.header[filter_column] == filter_id]
+            flats_with_filter = [image for image in flat_datas if band(image) == band_id]
             # assert (len(flats_with_filter) == 1)  # TODO only one flat
             # TODO this assumes that you pass all possible flats. But CLI only wants one flat right now
         except KeyError as err:
@@ -103,7 +105,7 @@ def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable
             raise err
 
         # bad pixel maps are valid, no matter the filter
-        ret[filter_id] = ImageGroup(bad_datas, flats_with_filter, images_with_filter)
+        ret[band_id] = ImageGroup(bad_datas, flats_with_filter, images_with_filter)
 
     return ret
 
@@ -330,11 +332,11 @@ def do_everything(bads: Iterable[str],
                   flats: Iterable[str],
                   images: Iterable[str],
                   output: str,
-                  filter_letter: str = 'J',  # TODO: allow 'all'
+                  band_id: Band = Band.J,  # TODO: allow 'all'
                   combine: str = 'median',
                   skyscale_method: str = 'subtract',
                   astromatic_cfg: Config = Config.default()):
-    reduced_image = reduce_image(bads, flats, images, filter_letter, combine, skyscale_method)
+    reduced_image = reduce_image(bads, flats, images, band_id, combine, skyscale_method)
     reffed_image, scamp_data, sextractor_data, reference_catalog_data = astroref(reduced_image, config=astromatic_cfg)
 
     if output:
@@ -354,17 +356,17 @@ def do_only_reduce(bads: Iterable[str],
                    flats: Iterable[str],
                    images: Iterable[str],
                    output: str,
-                   filter_letter: str = 'J',  # TODO: allow 'all'
+                   band_id: Band = Band.J,  # TODO: allow 'all'
                    combine: str = 'median',
                    skyscale_method: str = 'subtract'):
-    reduced_image = reduce_image(bads, flats, images, filter_letter, combine, skyscale_method)
+    reduced_image = reduce_image(bads, flats, images, band_id, combine, skyscale_method)
     write_output(output, reduced_image, None, None)
 
 
 def reduce_image(bads: Iterable[str],
                  flats: Iterable[str],
                  images: Iterable[str],
-                 filter_letter: str = 'J',  # TODO: allow 'all'
+                 band_id: Band = Band.J,  # TODO: allow 'all'
                  combine: str = 'median',
                  skyscale_method: str = 'subtract') -> CCDData:
     """
@@ -373,22 +375,20 @@ def reduce_image(bads: Iterable[str],
     :param bads: list of paths to bad pixel frames
     :param flats: list of paths to flat frames
     :param images: list of paths to images
-    :param filter_letter: which spectral band to look at
+    :param band_id: which spectral band to look at, enum
     :param combine: either 'median' or 'average'
     :param skyscale_method: either 'subtract' or 'divide'
     :return: (combined_output, scamp_output, sextractor_output)
     """
 
-    assert (filter_letter in filter_vals)
-
     # use pool as a context manager so that terminate() gets called automatically
     with Pool(n_cpu) as pool:
-        read_files = read_and_sort(bads, flats, images, pool)[filter_letter]
+        read_files = read_and_sort(bads, flats, images, pool)[band_id]
 
         if not (len(read_files.bad) > 0 and len(read_files.flat) > 0 and len(read_files.images) > 0):
             raise ValueError('cannot continue, not enough data left after filtering data by available spectral band')
         dimensions = read_files.bad[0].shape
-        for image in itertools.chain(read_files.bad,read_files.flat,read_files.images):
+        for image in itertools.chain(read_files.bad, read_files.flat, read_files.images):
             if not image.shape == dimensions:
                 raise ValueError('image dimension mismatch', image)
 
