@@ -1,5 +1,7 @@
 from enum import Enum
 from astropy.nddata import CCDData
+from . import NotcamClassifier
+from . import AlfoscClassifier
 
 
 class Category(Enum):
@@ -17,35 +19,28 @@ class Band(Enum):
 class Instrument(Enum):
     NOTCAM = 0
     ALFOSC = 1
+    UNKNOWN = 2
 
 
 def determine_instrument(img: CCDData):
-    pass
+    val = img.header['INSTRUME']
+    if val == 'ALFOSC_FASU':
+        return Instrument.ALFOSC
+    if val == 'NOTCAM':
+        return Instrument.NOTCAM
+    else:
+        return Instrument.UNKNOWN
 
 
-# notcam
-filter_column = 'NCFLTNM2'  # TODO NOTCam-specific
-filter_values = ('H', 'J', 'Ks')
-
-image_category_str = 'IMAGECAT'
-object_ID = 'OBJECT'
+classifiers = {Instrument.NOTCAM: NotcamClassifier,
+               Instrument.ALFOSC: AlfoscClassifier}
 
 
 def image_category(img: CCDData) -> Category:
-    val = img.header[image_category_str]
-    if val == 'SCIENCE':
-        return Category.SCIENCE
-    elif val == 'CALIB':
-        return Category.CALIBRATION
-    else:
-        return Category.UNKNOWN
+    func = classifiers[determine_instrument(img)].image_category
+    return func(img)
 
 
 def band(img: CCDData) -> Band:
-    try:
-        return Band[img.header[filter_column]]
-    except KeyError as err:
-        print(f"Image assumed to be taken with NOTCAM: Band {img.header[filter_column]} not valid for this instrument")
-        raise err
-
-
+    func = classifiers[determine_instrument(img)].band
+    return func(img)

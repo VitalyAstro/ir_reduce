@@ -18,7 +18,7 @@ from astropy.nddata import CCDData
 from astropy.stats import SigmaClip
 from numpy import s_  # numpy helper to create slices by indexing this
 
-from .instrumentHeaderKeys import Category, image_category, Band, band
+from .instrumentHeaderKeys import Category, image_category, Band, band, determine_instrument, Instrument
 
 from .image_discovery import ImageGroup
 from .run_sextractor_scamp import run_astroref, Config
@@ -90,6 +90,10 @@ def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable
     bad_datas = list(bad_promise.get())
 
     ret = dict()
+    # make sure all images are from the same instrument with set comprehension
+    assert len({determine_instrument(image) for image in itertools.chain(image_datas, flat_datas, bad_datas)}) == 1, \
+        'Cannot mix images from different instruments'  # TODO allow this in some cases?
+
     # for all filter present in science data we need at least a flatImage and a bad pixel image
     for band_id in Band:
         try:
