@@ -35,7 +35,7 @@ def test_roundtrip():
     args = parser.parse_args(['d', '-o', 'out.fits', 'mydir'])
     assert args.func == cli.do_discover
     mock_reduce, mock_discover = mock.Mock(), mock.Mock()
-    with mock.patch('ir_reduce.cli.astroref_and_or_reduce', mock_reduce), mock.patch('ir_reduce.image_discovery.discover', mock_discover):
+    with mock.patch('ir_reduce.cli.astroref_and_or_reduce', mock_reduce), mock.patch('ir_reduce.image_discovery.discover_filename', mock_discover):
         mock_discover.return_value = ([1], [2], [3])
         args.func(args)
 
