@@ -18,7 +18,7 @@ from astropy.nddata import CCDData
 from astropy.stats import SigmaClip
 from numpy import s_  # numpy helper to create slices by indexing this
 
-from .instrumentHeaderKeys import Category, image_category, Band, band, determine_instrument, Instrument
+from .image_type_classifier import Category, image_category, Band, band, determine_instrument, Instrument
 
 from .image_discovery import ImageGroup
 from .run_sextractor_scamp import run_astroref, Config
@@ -99,10 +99,14 @@ def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable
         try:
             images_with_filter = [image for image in image_datas if band(image) == band_id]
             # only science images allowed
-            assert (all((image_category(image) == Category.SCIENCE for image in images_with_filter)))
+            assert all((image_category(image) == Category.SCIENCE for image in images_with_filter))
 
             flats_with_filter = [image for image in flat_datas if band(image) == band_id]
-            # assert (len(flats_with_filter) == 1)  # TODO only one flat
+
+            assert all((image_category(img) in
+                        (Category.CALIBRATION, Category.TECHNICAL) for img in flats_with_filter))
+
+            # assert (len(flats_with_filter) == 1)  # TODO only one flat?
             # TODO this assumes that you pass all possible flats. But CLI only wants one flat right now
         except KeyError as err:
             print("looks like there's no filter column in the fits data")

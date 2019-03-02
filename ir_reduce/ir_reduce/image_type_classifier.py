@@ -1,26 +1,7 @@
-from enum import Enum
 from astropy.nddata import CCDData
-
-class Category(Enum):
-    SCIENCE = 0
-    CALIBRATION = 1
-    UNKNOWN = 2
-
-
-class Band(Enum):
-    H = 'H'
-    J = 'J'
-    Ks = 'Ks'
-
-
-class Instrument(Enum):
-    NOTCAM = 0
-    ALFOSC = 1
-    UNKNOWN = 2
-
-# TODO: split  the above into separate file so it can be independently imported in the classifiers
-from . import NotcamClassifier
-from . import AlfoscClassifier
+from .classifier_common import *
+from . import notcam_classifier
+from . import alfosc_classifier
 
 
 def determine_instrument(img: CCDData):
@@ -33,8 +14,8 @@ def determine_instrument(img: CCDData):
         return Instrument.UNKNOWN
 
 
-classifiers = {Instrument.NOTCAM: NotcamClassifier,
-               Instrument.ALFOSC: AlfoscClassifier}
+classifiers = {Instrument.NOTCAM: notcam_classifier,
+               Instrument.ALFOSC: alfosc_classifier}
 
 
 def image_category(img: CCDData) -> Category:

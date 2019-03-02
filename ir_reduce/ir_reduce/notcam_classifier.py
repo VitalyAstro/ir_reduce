@@ -1,4 +1,4 @@
-from .instrumentHeaderKeys import Band, Category
+from .classifier_common import Band, Category
 from astropy.nddata import CCDData
 
 filter_column = 'NCFLTNM2'

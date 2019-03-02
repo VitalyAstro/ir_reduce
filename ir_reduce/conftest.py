@@ -5,6 +5,9 @@ def pytest_addoption(parser):
         "--runintegration", action="store_true", default=False, help="run integration tests depending on testdata"
     )
     parser.addoption(
+        "--data-dir", action='store', default='../testdata', help="custom directory for testdata"
+    )
+    parser.addoption(
         "--dummy", action="store_true", default=False, help="dummy argument"
     )
 

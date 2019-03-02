@@ -7,7 +7,7 @@ from typing import Iterable, Any, Sequence
 import ir_reduce
 
 import ir_reduce.run_sextractor_scamp
-from .instrumentHeaderKeys import Band
+from .image_type_classifier import Band
 
 # todo tmp
 logging.getLogger().setLevel(logging.DEBUG)
