@@ -23,7 +23,6 @@ class Band(Enum):
     Ks = 'Ks'
 
     # ALF
-
     ubes = 'U_Bes 362_60'
     bbes = 'B_Bes 440_100'
     iint = 'i_int 797_157'

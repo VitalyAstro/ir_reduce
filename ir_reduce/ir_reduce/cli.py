@@ -77,7 +77,12 @@ def do_only_astroref(args: argparse.Namespace):
 
 def do_discover(args: argparse.Namespace):
     from ir_reduce import image_discovery
-    bads, flats, images = image_discovery.discover(args.folder)
+    if args.method == 'file':
+        bads, flats, images = image_discovery.discover_filename(args.folder)
+    else:
+        if not args.method == 'header':
+             logging.warning('unknown method for discorvery. Using fits-header information')
+        bads, flats, images = image_discovery.discover_header(args.folder)
 
     if len(bads) == 0:
         raise ValueError('No bad pixel map found')
@@ -184,6 +189,8 @@ sub_parser.set_defaults(func=do_manual)
 sub_parser = sub_parsers.add_parser('discover', aliases=['d'], help='Discover images in optionally specified directory')
 sub_parser.add_argument('folder', nargs='?', type=str, default=os.getcwd(),
                         help='folder to search for files to analyze')
+sub_parser.add_argument('-m', '--method', nargs='?', type=str, default='file',
+                        help='use filename ("file", default) or else header for deciding what to do with the image')
 sub_parser.add_argument('-c', '--confirm', action='store_true', help='Confirm file selection')
 sub_parser.add_argument('-o', '--output', nargs='?', type=str, default=output_default,
                         help='output file to write to, default: reduced.fits')

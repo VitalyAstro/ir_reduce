@@ -5,7 +5,7 @@ from collections import namedtuple
 ImageGroup = namedtuple('ImageGroup', ['bad', 'flat', 'images'])
 
 
-def discover(directory: str) -> ImageGroup:
+def discover_filename(directory: str) -> ImageGroup:
     """
     find all files in a given directory that look like exposures, bad-pixel maps and flat fields
     :param directory:
@@ -28,3 +28,10 @@ def discover(directory: str) -> ImageGroup:
     image_files = fits_files.difference(bad_candidates, flat_candidates)
 
     return ImageGroup(bad=bad_candidates, flat=flat_candidates, images=image_files)
+
+
+def discover_header(directory: str) -> ImageGroup:
+
+    raise NotImplementedError("This would be a lot easier after having read the data")
+    fits_files = {os.path.join(directory, file) for file in os.listdir(directory)}
+
