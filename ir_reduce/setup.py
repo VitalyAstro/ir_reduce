@@ -8,7 +8,7 @@ with open(readme_path, "r") as fh:
 
 setuptools.setup(
     name="ir_reduce",
-    version="0.0.1",
+    version="0.1.1",
     author="Sebastian Meßlinger",
     author_email="sebastian.messlinger@posteo.de",
     description="A reduction toolchain for infrared astronomical images",
