@@ -29,7 +29,7 @@ def astroref_and_or_reduce(bads: Iterable[str],
 
     to_call(bads, flats, images,
             output=flags.output,
-            band_id=Band[flags.filter[0]],
+            band_id=Band.lookup(flags.filter[0]),
             combine='average' if flags.average else 'median',
             skyscale_method='subtract' if flags.subtract else 'divide',
             astromatic_cfg=astromatic_cfg)
@@ -85,7 +85,7 @@ def do_discover(args: argparse.Namespace):
         bads, flats, images = image_discovery.discover_header(args.folder)
 
     if len(bads) == 0:
-        raise ValueError('No bad pixel map found')
+        logging.warning('No bad pixel map found')
     if len(flats) == 0:
         raise ValueError('No flatfield found')
     if len(images) == 0:

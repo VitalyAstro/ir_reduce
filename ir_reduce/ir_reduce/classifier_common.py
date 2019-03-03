@@ -5,6 +5,7 @@ class Category(Enum):
     SCIENCE = auto()
     BAD = auto()
     FLAT = auto()
+    BIAS = auto()
     TECHNICAL = auto()
     UNKNOWN = auto()
 
@@ -16,7 +17,7 @@ class Band(Enum):
         """Reverse of the []-operator to access by value->name, not name->value"""
         for entry in cls:
             if entry.value == value:
-                return entry.name
+                return entry
 
     # Notcam
     H = 'H'

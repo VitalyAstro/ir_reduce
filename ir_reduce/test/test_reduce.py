@@ -1,17 +1,16 @@
-import pytest
-
-from astropy.nddata.ccddata import CCDData
-from astropy import units as u
-import warnings
 import glob
-from numpy import array, zeros, ones, float64, int64, s_
-import numpy as np
 import os
 import tempfile
 
+import numpy as np
+import pytest
+from astropy import units as u
+from astropy.nddata.ccddata import CCDData
 from ir_reduce import standard_process, skyscale, interpolate, read_and_sort, do_everything, Pool, PoolDummy
-from .datadir import datadir
 from ir_reduce.classifier_common import Band
+from numpy import zeros, ones, float64, int64, s_
+
+from .datadir import datadir
 
 # Setup
 image_size = (10, 10)
@@ -34,7 +33,7 @@ def genImages(request):
 
 @pytest.fixture(params=[zeros(image_size, dtype=bool), ones(image_size, dtype=bool)])
 def genBadPixel(request):
-        return CCDData(request.param, unit=u.electron)
+    return CCDData(request.param, unit=u.electron)
 
 
 # testcases
@@ -90,8 +89,8 @@ def test_read_and_sort(pool, datadir):
 
 @pytest.mark.integration
 @pytest.mark.filterwarnings('ignore::astropy.wcs.FITSFixedWarning')
-def test_do_everything():
-    testdir = os.path.abspath("../testdata")
+def test_do_everything_ir(datadir):
+    testdir = datadir
     assert os.path.isdir(testdir), testdir + " does not exist"
 
     bads = glob.glob(testdir + "/bad*.fits")
@@ -100,6 +99,56 @@ def test_do_everything():
 
     with tempfile.TemporaryDirectory() as tmpdir:
         image, scamp, sextractor = do_everything(bads, flats, imgs, os.path.join(tmpdir, "testout_standard.fits"))
+
+        assert image
+        assert scamp
+        assert sextractor
+
+
+@pytest.mark.integration
+@pytest.mark.filterwarnings('ignore::astropy.wcs.FITSFixedWarning')
+def test_do_everything_optical(datadir):
+    testdir = datadir
+    assert os.path.isdir(testdir), testdir + " does not exist"
+
+    imgs = [os.path.join(datadir, "TestOptData", img) for img in
+            ["ALAd210081.fits", "ALAd210082.fits", "ALAd210080.fits", "ALAd210079.fits"]]
+    bads = []
+    flats = [os.path.join(datadir, "TestOptData", flat) for flat in
+             ['ALAd210014.fits',
+              'ALAd210016.fits',
+              'ALAd210032.fits',
+              'ALAd210038.fits',
+              'ALAd210027.fits',
+              'ALAd210026.fits',
+              'ALAd210028.fits',
+              'ALAd210040.fits',
+              'ALAd210034.fits',
+              'ALAd210022.fits',
+              'ALAd210024.fits',
+              'ALAd210012.fits',
+              'ALAd210011.fits',
+              'ALAd210007.fits',
+              'ALAd210039.fits',
+              'ALAd210035.fits',
+              'ALAd210010.fits',
+              'ALAd210019.fits',
+              'ALAd210008.fits',
+              'ALAd210031.fits',
+              'ALAd210030.fits',
+              'ALAd210023.fits',
+              'ALAd210002.fits',
+              'ALAd210006.fits',
+              'ALAd210015.fits',
+              'ALAd210036.fits',
+              'ALAd210020.fits',
+              'ALAd210018.fits',
+              'ALAd210003.fits',
+              'ALAd210004.fits']]
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        image, scamp, sextractor = do_everything(bads, flats, imgs, os.path.join(tmpdir, "testout_standard.fits"),
+                                                 band_id=Band.vbes)
 
         assert image
         assert scamp

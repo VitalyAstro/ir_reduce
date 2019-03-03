@@ -120,9 +120,13 @@ def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable
 
 def single_reduction(image, bad, flat):
     image.mask = bad
-    # TODO that's from the quicklook-package, probably would want to do this individually for every sensor area
-    gain = (image.header['GAIN1'] + image.header['GAIN2'] + image.header['GAIN3'] + image.header['GAIN4']) / 4
-    readnoise = (image.header['RDNOISE1'] + image.header['RDNOISE2'] + image.header['RDNOISE3'] + image.header[
+    if "GAIN" in image.header:  # ALF
+        gain = image.header['GAIN']
+        readnoise = image.header['RDNOISE']
+    else:  # NOTCAM
+        # TODO that's from the quicklook-package, probably would want to do this individually for every sensor area
+        gain = (image.header['GAIN1'] + image.header['GAIN2'] + image.header['GAIN3'] + image.header['GAIN4']) / 4
+        readnoise = (image.header['RDNOISE1'] + image.header['RDNOISE2'] + image.header['RDNOISE3'] + image.header[
         'RDNOISE4']) / 4
 
     reduced = ccdproc.ccd_process(image,
@@ -149,8 +153,10 @@ def standard_process(bads: List[CCDData], flat: CCDData, images: List[CCDData],
     :param pool: optional process pool
     :return:
     """
-    bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads))  # combine bad pixel masks
-
+    if bads:
+        bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads))  # combine bad pixel masks
+    else:
+        bad = None
     return list(pool.starmap(single_reduction, zip(images, itertools.repeat(bad), itertools.repeat(flat))))
 
 
@@ -163,7 +169,10 @@ def tiled_process(bads: List[CCDData], flat: CCDData, images: List[CCDData]) -> 
     :param images:
     :return:
     """
-    bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads))  # combine bad pixel masks
+    if bads:
+        bad = reduce(lambda x, y: x.astype(bool) | y.astype(bool), (i.data for i in bads))  # combine bad pixel masks
+    else:
+        bad = None
 
     reduceds = []
     for image in images:
@@ -388,14 +397,14 @@ def reduce_image(bads: Iterable[str],
     :param skyscale_method: either 'subtract' or 'divide'
     :return: (combined_output, scamp_output, sextractor_output)
     """
-
+    assert band_id
     # use pool as a context manager so that terminate() gets called automatically
     with Pool(n_cpu) as pool:
         read_files = read_and_sort(bads, flats, images, pool)[band_id]
 
-        if not (len(read_files.bad) > 0 and len(read_files.flat) > 0 and len(read_files.images) > 0):
+        if not (len(read_files.flat) > 0 and len(read_files.images) > 0):
             raise ValueError('cannot continue, not enough data left after filtering data by available spectral band')
-        dimensions = read_files.bad[0].shape
+        dimensions = read_files.flat[0].shape
         for image in itertools.chain(read_files.bad, read_files.flat, read_files.images):
             if not image.shape == dimensions:
                 raise ValueError('image dimension mismatch', image)
@@ -406,7 +415,8 @@ def reduce_image(bads: Iterable[str],
         processed = standard_process(read_files.bad, read_files.flat[0], read_files.images, pool)
         skyscaled = skyscale(processed, skyscale_method, pool)
 
-        fixed = pool.map(fix_pix, skyscaled)
+        # does only make sense when we have bad pixels
+        fixed = pool.map(fix_pix, skyscaled) if bads else skyscaled
 
         # Reproject everything to the world-coordinate system of the first image
         wcs = fixed[0].wcs
