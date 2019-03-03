@@ -3,7 +3,8 @@ from enum import Enum, EnumMeta, auto
 
 class Category(Enum):
     SCIENCE = auto()
-    CALIBRATION = auto()
+    BAD = auto()
+    FLAT = auto()
     TECHNICAL = auto()
     UNKNOWN = auto()
 

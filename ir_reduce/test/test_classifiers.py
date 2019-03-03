@@ -4,12 +4,7 @@ import os
 import glob
 
 from ir_reduce import image_type_classifier
-
-
-@pytest.fixture
-def datadir(request):
-    return request.config.option.data_dir
-
+from .datadir import datadir
 
 @pytest.mark.integration
 @pytest.mark.filterwarnings('ignore::astropy.wcs.FITSFixedWarning')

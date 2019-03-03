@@ -7,8 +7,11 @@ import glob
 from numpy import array, zeros, ones, float64, int64, s_
 import numpy as np
 import os
-from ir_reduce import standard_process, skyscale, interpolate, read_and_sort, do_everything, Pool, PoolDummy
 import tempfile
+
+from ir_reduce import standard_process, skyscale, interpolate, read_and_sort, do_everything, Pool, PoolDummy
+from .datadir import datadir
+from ir_reduce.classifier_common import Band
 
 # Setup
 image_size = (10, 10)
@@ -70,19 +73,19 @@ def test_interpolate():
 @pytest.mark.integration
 @pytest.mark.filterwarnings('ignore::astropy.wcs.FITSFixedWarning')
 @pytest.mark.parametrize('pool', [PoolDummy(), Pool(2)])
-def test_read_and_sort(pool):
-    testdir = os.path.abspath("../testdata")
+def test_read_and_sort(pool, datadir):
+    testdir = datadir
     assert os.path.isdir(testdir), testdir + " does not exist"
 
     bads = glob.glob(testdir + "/bad*.fits")
     flats = glob.glob(testdir + "/Flat*.fits")
     imgs = glob.glob(testdir + "/NCA*.fits")
     read = read_and_sort(bads, flats, imgs, pool)
-    assert read['J'].bad
-    assert read['J'].flat
-    assert len(read['J'].images) > 0
-    assert read['H']
-    assert read['Ks']
+    assert read[Band.J].bad
+    assert read[Band.J].flat
+    assert len(read[Band.J].images) > 0
+    assert read[Band.J]
+    assert read[Band.J]
 
 
 @pytest.mark.integration

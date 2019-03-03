@@ -81,7 +81,7 @@ def do_discover(args: argparse.Namespace):
         bads, flats, images = image_discovery.discover_filename(args.folder)
     else:
         if not args.method == 'header':
-             logging.warning('unknown method for discorvery. Using fits-header information')
+            logging.warning('unknown method for discovery. Using fits-header information')
         bads, flats, images = image_discovery.discover_header(args.folder)
 
     if len(bads) == 0:
@@ -190,7 +190,8 @@ sub_parser = sub_parsers.add_parser('discover', aliases=['d'], help='Discover im
 sub_parser.add_argument('folder', nargs='?', type=str, default=os.getcwd(),
                         help='folder to search for files to analyze')
 sub_parser.add_argument('-m', '--method', nargs='?', type=str, default='file',
-                        help='use filename ("file", default) or else header for deciding what to do with the image')
+                        help='use filename ("file", default) or else header for deciding what to do with the image. '
+                             'Warning: Specific Keywords need to be present in Header for this to work.')
 sub_parser.add_argument('-c', '--confirm', action='store_true', help='Confirm file selection')
 sub_parser.add_argument('-o', '--output', nargs='?', type=str, default=output_default,
                         help='output file to write to, default: reduced.fits')

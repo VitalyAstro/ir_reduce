@@ -54,6 +54,7 @@ class PoolDummy:
 
     def __enter__(self):
         return self
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
@@ -103,8 +104,7 @@ def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable
 
             flats_with_filter = [image for image in flat_datas if band(image) == band_id]
 
-            assert all((image_category(img) in
-                        (Category.CALIBRATION, Category.TECHNICAL) for img in flats_with_filter))
+            assert all((image_category(img) == Category.FLAT for img in flats_with_filter))
 
             # assert (len(flats_with_filter) == 1)  # TODO only one flat?
             # TODO this assumes that you pass all possible flats. But CLI only wants one flat right now

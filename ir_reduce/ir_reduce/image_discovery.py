@@ -2,7 +2,13 @@ import os
 from fnmatch import fnmatch
 from collections import namedtuple
 
+from astropy.io.fits import Header
+from astropy.io import fits
+
+from .image_type_classifier import image_category, Category
+
 ImageGroup = namedtuple('ImageGroup', ['bad', 'flat', 'images'])
+fits_match = '*.[Ff][Ii][Tt][Ss]'
 
 
 def discover_filename(directory: str) -> ImageGroup:
@@ -12,7 +18,6 @@ def discover_filename(directory: str) -> ImageGroup:
     :return: Named tuple ImageGroup, contains lists of detected files
     """
     # This is pretty basic matching so far
-    fits_match = '*.[Ff][Ii][Tt][Ss]'
     bad_match = '*[Bb][Aa][Dd]*'
     flat_match = '*[Ff][Ll][Aa][Tt]*'
 
@@ -32,6 +37,33 @@ def discover_filename(directory: str) -> ImageGroup:
 
 def discover_header(directory: str) -> ImageGroup:
 
-    raise NotImplementedError("This would be a lot easier after having read the data")
-    fits_files = {os.path.join(directory, file) for file in os.listdir(directory)}
+    """
+    Sort images based on header information
+    :param directory: find fits-files where?
+    :return: Named tuple ImageGroup, contains lists of detected files
+    """
+    # This would be a little less duplication if everything in main.py worked with CCDData directly and the IO was
+    # factored out.
+
+    fits_filenames = [os.path.join(directory, file) for file in os.listdir(directory) if fnmatch(file, fits_match)]
+    # TODO Header.fromfile seems to crap out sometimes. not sure if this is a bug
+    # category = [image_category(Header.fromfile(fname)) for fname in fits_filenames]
+    category = [image_category(fits.open(fname)[0].header) for fname in fits_filenames]
+
+    # TODO there's no way to find any bad pixel maps for ALFSOC because I don't know what the header would be
+    # For now you need to manually change the header of the file so that IMAGETYP == 'BAD_PIXEL'
+    # d = fits.open('bad_cold5.fits')
+    # d[0].header['IMAGETYP'] = 'BAD_PIXEL'
+    # d.writeto('bad_cold5_with_header_change.fits')
+    bad = [fname for fname, cat in zip(fits_filenames, category) if cat == Category.BAD]
+    flat = [fname for fname, cat in zip(fits_filenames, category) if cat == Category.FLAT]
+    images = [fname for fname, cat in zip(fits_filenames, category) if cat == Category.SCIENCE]
+
+    return ImageGroup(bad=bad, flat=flat, images=images)
+
+
+
+
+
+
 
