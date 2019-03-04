@@ -353,8 +353,9 @@ def do_everything(bads: Iterable[str],
                   band_id: Band = Band.J,  # TODO: allow 'all'
                   combine: str = 'median',
                   skyscale_method: str = 'subtract',
-                  astromatic_cfg: Config = Config.default()):
-    reduced_image = reduce_image(bads, flats, images, band_id, combine, skyscale_method)
+                  astromatic_cfg: Config = Config.default(),
+                  single_thread: bool = False):
+    reduced_image = reduce_image(bads, flats, images, band_id, combine, skyscale_method, single_thread)
     reffed_image, scamp_data, sextractor_data, reference_catalog_data = astroref(reduced_image, config=astromatic_cfg)
 
     if output:
@@ -376,8 +377,9 @@ def do_only_reduce(bads: Iterable[str],
                    output: str,
                    band_id: Band = Band.J,  # TODO: allow 'all'
                    combine: str = 'median',
-                   skyscale_method: str = 'subtract'):
-    reduced_image = reduce_image(bads, flats, images, band_id, combine, skyscale_method)
+                   skyscale_method: str = 'subtract',
+                   single_thread: bool = False):
+    reduced_image = reduce_image(bads, flats, images, band_id, combine, skyscale_method, single_thread)
     write_output(output, reduced_image, None, None, None)
 
 
@@ -386,7 +388,8 @@ def reduce_image(bads: Iterable[str],
                  images: Iterable[str],
                  band_id: Band = Band.J,  # TODO: allow 'all'
                  combine: str = 'median',
-                 skyscale_method: str = 'subtract') -> CCDData:
+                 skyscale_method: str = 'subtract',
+                 single_thread: bool = False) -> CCDData:
     """
     Take a list of files for badPixel, flatfield and exposures + a bunch of processing parameters and reduce them
     to write an output filec
@@ -396,11 +399,16 @@ def reduce_image(bads: Iterable[str],
     :param band_id: which spectral band to look at, enum
     :param combine: either 'median' or 'average'
     :param skyscale_method: either 'subtract' or 'divide'
+    :param single_thread: if false, don't use multiprocessing pool
     :return: (combined_output, scamp_output, sextractor_output)
     """
     assert band_id
+
+    # you can't just reasign the outer scope variable without weirdness...
+    _Pool = PoolDummy if single_thread else Pool
+
     # use pool as a context manager so that terminate() gets called automatically
-    with Pool(n_cpu) as pool:
+    with _Pool(n_cpu) as pool:
         read_files = read_and_sort(bads, flats, images, pool)[band_id]
 
         if not (len(read_files.flat) > 0 and len(read_files.images) > 0):

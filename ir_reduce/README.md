@@ -106,7 +106,10 @@ Reduce, astroreff images. Plot reference cataloge and source exctractor results
 
 Reduce images in current directory for the V_bes filter, sort them by header
     `ir-reduce-cli -fl "V_Bes 530_80" d --method header ./`
-  
+ 
+If you get errors that indicate something that went wrong with multiprocessing try
+`ir-reduce-cli --single-thread <the command you ran before>`
+to not swallow tracebacks
 
 ### Usage from python
 run tests: `pytest`

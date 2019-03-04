@@ -33,7 +33,8 @@ def astroref_and_or_reduce(bads: Iterable[str],
             band_id=Band.lookup(flags.filter[0]),
             combine='average' if flags.average else 'median',
             skyscale_method='subtract' if flags.subtract else 'divide',
-            astromatic_cfg=astromatic_cfg)
+            astromatic_cfg=astromatic_cfg,
+            single_thread=flags.single_thread)
     # register=flags.register_images,
     # verbosity=flags.verbose,
     # force=flags.force)
@@ -149,6 +150,8 @@ parser.add_argument('--filter', '-fl', nargs=1, default='J',
                     help='What image filter/spectral Band do we want to process?')
 parser.add_argument('--no-ref', '-n', action='store_true', default=False,
                     help='the output image won\'t be astroreferenced')
+parser.add_argument('--single-thread', '-si', action='store_true', default=False, help="don't use multiprocessing,"
+                                                                                       "helps for clearer errors")
 
 parser.add_argument('--verbose', '-v', action='count', default=0, help='No effect yet')
 parser.add_argument('--version', action='version', version=VERSION)
