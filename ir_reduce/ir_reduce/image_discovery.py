@@ -2,7 +2,7 @@ import os
 from fnmatch import fnmatch
 from collections import namedtuple
 
-from astropy.io.fits import Header
+# from astropy.io.fits import Header
 from astropy.io import fits
 
 from .image_type_classifier import image_category, Category

@@ -5,6 +5,7 @@ Functions to convert FITS files or astropy Tables to FITS_LDAC files and
 vice versa.
 """
 
+
 def convert_hdu_to_ldac(hdu):
     """
     Convert an hdu table to a fits_ldac table (format used by astromatic suite)
@@ -31,7 +32,8 @@ def convert_hdu_to_ldac(hdu):
     tbl1.header['EXTNAME'] = 'LDAC_IMHEAD'
     tbl2 = fits.BinTableHDU(hdu.data)
     tbl2.header['EXTNAME'] = 'LDAC_OBJECTS'
-    return (tbl1, tbl2)
+    return tbl1, tbl2
+
 
 def convert_table_to_ldac(tbl):
     """
@@ -49,13 +51,14 @@ def convert_table_to_ldac(tbl):
     from astropy.io import fits
     import tempfile
     f = tempfile.NamedTemporaryFile(suffix='.fits', mode='rb+')
-    tbl.write(f.name, format='fits',overwrite='true')
+    tbl.write(f.name, format='fits', overwrite='true')
     f.seek(0)
     hdulist = fits.open(f.name, mode='update')
     tbl1, tbl2 = convert_hdu_to_ldac(hdulist[1])
     new_hdulist = [hdulist[0], tbl1, tbl2]
     new_hdulist = fits.HDUList(new_hdulist)
     return new_hdulist
+
 
 def save_table_as_ldac(tbl, filename, **kwargs):
     """
@@ -73,6 +76,7 @@ def save_table_as_ldac(tbl, filename, **kwargs):
     hdulist = convert_table_to_ldac(tbl)
     hdulist.writeto(filename, **kwargs)
 
+
 def get_table_from_ldac(filename, frame=1):
     """
     Load an astropy table from a fits_ldac by frame (Since the ldac format has column 
@@ -87,9 +91,7 @@ def get_table_from_ldac(filename, frame=1):
         Number of the frame in a regular fits file
     """
     from astropy.table import Table
-    if frame>0:
-        frame = frame*2
+    if frame > 0:
+        frame = frame * 2
     tbl = Table.read(filename, hdu=frame)
     return tbl
-
-

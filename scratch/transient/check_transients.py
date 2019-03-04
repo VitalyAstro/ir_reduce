@@ -1,8 +1,7 @@
 from pylab import *
 
-import astropy
+import astropy.io.fits
 import astropy.wcs
-import astropy.io
 import astropy.table
 
 # run sextractor, scamp

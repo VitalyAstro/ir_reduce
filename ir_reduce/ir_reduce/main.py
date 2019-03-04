@@ -18,13 +18,13 @@ from astropy.nddata import CCDData
 from astropy.stats import SigmaClip
 from numpy import s_  # numpy helper to create slices by indexing this
 
-from .image_type_classifier import Category, image_category, Band, band, determine_instrument, Instrument
-
 from .image_discovery import ImageGroup
+from .image_type_classifier import Category, image_category, Band, band, determine_instrument
 from .run_sextractor_scamp import run_astroref, Config
 
-
 n_cpu = cpu_count()  # creating a global pool here does not work as the workers import this exact file,
+
+
 # causing infinite loops/import errors. Moving invoked functions out of this file should solve the issue
 
 
@@ -127,7 +127,7 @@ def single_reduction(image, bad, flat):
         # TODO that's from the quicklook-package, probably would want to do this individually for every sensor area
         gain = (image.header['GAIN1'] + image.header['GAIN2'] + image.header['GAIN3'] + image.header['GAIN4']) / 4
         readnoise = (image.header['RDNOISE1'] + image.header['RDNOISE2'] + image.header['RDNOISE3'] + image.header[
-        'RDNOISE4']) / 4
+            'RDNOISE4']) / 4
 
     reduced = ccdproc.ccd_process(image,
                                   oscan=None,
@@ -295,6 +295,7 @@ def fix_pix(img: CCDData) -> CCDData:
         y0, y1 = y[i].min(), y[i].max() + 1
         subim = im[y0: y1, x0: x1]
         submask = mask[y0: y1, x0: x1]
+        # noinspection PyPep8
         subgood = (submask == False)
 
         cleaned[i * mask] = subim[subgood].mean()
@@ -362,7 +363,7 @@ def do_everything(bads: Iterable[str],
     return reffed_image, scamp_data, sextractor_data
 
 
-def do_only_astroref(images: Sequence[str], output: Sequence[str], astromatic_cfg:Config):
+def do_only_astroref(images: Sequence[str], output: Sequence[str], astromatic_cfg: Config):
     for image, outname in zip(images, output):
         read_image = astropy.nddata.CCDData.read(image)
         reffed_image, scamp_data, sextractor_data, reference_catalog_data = astroref(read_image, astromatic_cfg)
@@ -377,7 +378,7 @@ def do_only_reduce(bads: Iterable[str],
                    combine: str = 'median',
                    skyscale_method: str = 'subtract'):
     reduced_image = reduce_image(bads, flats, images, band_id, combine, skyscale_method)
-    write_output(output, reduced_image, None, None)
+    write_output(output, reduced_image, None, None, None)
 
 
 def reduce_image(bads: Iterable[str],

@@ -1,12 +1,13 @@
-import subprocess as sp
+import glob
 import os
+import shutil
+import subprocess as sp
+import sys
 import tempfile
 from typing import Union, Tuple, List, Dict
-from astropy.nddata.ccddata import CCDData
+
 import astropy.io.fits as fits
-import sys
-import glob
-import shutil
+from astropy.nddata.ccddata import CCDData
 
 """
 Throughout this file: sex->SourceExtractor
@@ -39,7 +40,6 @@ class Config:
     @staticmethod
     def default():
         return Config()
-
 
 
 def astroreff_files(input_files: List[str], config: Config = Config.default()) -> None:
@@ -132,7 +132,7 @@ def split_overriders(overriders: List[str]) -> List[str]:
     ret = []
     for entry in filter(None, overriders):  # remove falsey entries, eg ''
         key, val = entry.split('=')
-        ret.append('-'+key)
+        ret.append('-' + key)
         ret.append(val)
     return ret
 
@@ -144,7 +144,6 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
 
     :param input_data:
     :param config:
-    :param working_dir:
     :param verbose:
     :return: tuple(scamp_data, sextractor_data,reference_catalog_data)
     """
@@ -170,7 +169,7 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
 
     sex_process = sp.run([config.sex_cmd, fname, '-c', config.sextractor_config,
                           '-STARNNW_NAME', config.sextractor_neural] + split_overriders(config.sextractor_overrides),
-                          cwd=working_dir, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True, timeout=30)
+                         cwd=working_dir, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True, timeout=30)
     if verbose:
         print('running', sex_process.args, 'in', working_dir)
     if sex_process.returncode != 0:
@@ -188,7 +187,7 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
 
     scamp_process = sp.run([config.scamp_cmd, config.sextractor_outfile, '-c', config.scamp_config]
                            + split_overriders(config.scamp_overrides),
-                           cwd=working_dir,stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True, timeout=30)
+                           cwd=working_dir, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True, timeout=30)
     if verbose:
         print('running', scamp_process.args, 'in', working_dir)
     if scamp_process.returncode != 0:

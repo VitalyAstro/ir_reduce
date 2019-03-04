@@ -1,4 +1,4 @@
-import astropy.io
+import astropy.io.fits
 import astropy.table
 import astropy.wcs
 import matplotlib.pyplot as plt

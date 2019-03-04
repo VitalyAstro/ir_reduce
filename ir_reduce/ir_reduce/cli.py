@@ -4,9 +4,10 @@ import logging
 import os
 from textwrap import dedent
 from typing import Iterable, Any, Sequence
-import ir_reduce
 
+import ir_reduce
 import ir_reduce.run_sextractor_scamp
+
 from .image_type_classifier import Band
 
 # todo tmp
@@ -121,7 +122,7 @@ def parse_astromatic_config(args: argparse.Namespace) -> ir_reduce.run_sextracto
 
     for filelist in (args.sextractor_config, args.sextractor_params, args.scamp_config):
         if not os.path.exists(filelist[0]):
-            raise ValueError("File "+filelist[0]+" not found")
+            raise ValueError("File " + filelist[0] + " not found")
 
     cfg.sextractor_config = os.path.abspath(args.sextractor_config[0])
     cfg.sextractor_params = os.path.abspath(args.sextractor_params[0])
@@ -157,9 +158,9 @@ parser.set_defaults(func=do_nothing)
 
 def add_astromatic_params(parser):
     astromatic_cfg = ir_reduce.run_sextractor_scamp.Config.default()
-    parser.add_argument('--sextractor-config','-sexc', nargs=1, type=str, default=[astromatic_cfg.sextractor_config],
+    parser.add_argument('--sextractor-config', '-sexc', nargs=1, type=str, default=[astromatic_cfg.sextractor_config],
                         help='override inbuilt source extractor config file')
-    parser.add_argument('--sextractor-params','-sexp', nargs=1, type=str, default=[astromatic_cfg.sextractor_param],
+    parser.add_argument('--sextractor-params', '-sexp', nargs=1, type=str, default=[astromatic_cfg.sextractor_param],
                         help='override inbuilt source extractor parameter file')
     parser.add_argument('--scamp-config', '-sconf', nargs=1, type=str, default=[astromatic_cfg.scamp_config],
                         help='override inbuilt scamp config file')
