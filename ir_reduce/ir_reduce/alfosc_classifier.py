@@ -21,7 +21,7 @@ def image_category(header: Header) -> Category:
         logging.warning('could not determine image category')
         return Category.UNKNOWN
 
-    if cat.strip() == '':
+    if cat.strip() == '' and header['OBS_TYPE'] == 'IMAGING':
         return Category.SCIENCE
     elif img_type == 'BAD_PIXEL':
         return Category.BAD

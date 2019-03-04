@@ -104,6 +104,8 @@ Reduce, astroreff images. Plot reference cataloge and source exctractor results
   ir-reduce-cli -v --filter J m -i ../NCAc0708*fits -f ../Flat* -b ../bad_*  --wdir wdir
   ir-reduce-cli t reduced.fits wdir/sexout.fits wdir/GAIA-DR1_1726+4220_r4.cat`
 
+Reduce images in current directory for the V_bes filter, sort them by header
+    `ir-reduce-cli -fl "V_Bes 530_80" d --method header ./`
   
 
 ### Usage from python
