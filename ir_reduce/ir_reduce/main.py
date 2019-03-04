@@ -97,20 +97,19 @@ def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable
 
     # for all filter present in science data we need at least a flatImage and a bad pixel image
     for band_id in Band:
-        try:
-            images_with_filter = [image for image in image_datas if band(image) == band_id]
-            # only science images allowed
-            assert all((image_category(image) == Category.SCIENCE for image in images_with_filter))
+        images_with_filter = [image for image in image_datas if band(image) == band_id]
 
-            flats_with_filter = [image for image in flat_datas if band(image) == band_id]
+        # only science images allowed. TODO this assumes that classification works but can screw over manual mode
+        # Maybe adding a check for manual would solve it, but it's not that critical
+        # assert all((image_category(image) == Category.SCIENCE for image in images_with_filter))
 
-            assert all((image_category(img) == Category.FLAT for img in flats_with_filter))
+        flats_with_filter = [image for image in flat_datas if band(image) == band_id]
 
-            # assert (len(flats_with_filter) == 1)  # TODO only one flat?
-            # TODO this assumes that you pass all possible flats. But CLI only wants one flat right now
-        except KeyError as err:
-            print("looks like there's no filter column in the fits data")
-            raise err
+        # see comment on the other assertion
+        # assert all((image_category(img) == Category.FLAT for img in flats_with_filter))
+
+        # assert (len(flats_with_filter) == 1)  # TODO only one flat?
+        # TODO this assumes that you pass all possible flats. But CLI only wants one flat right now
 
         # bad pixel maps are valid, no matter the filter
         ret[band_id] = ImageGroup(bad_datas, flats_with_filter, images_with_filter)
