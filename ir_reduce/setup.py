@@ -1,7 +1,7 @@
 import setuptools
 import os.path as p
 
-readme_path = p.join(p.dirname(p.abspath(__file__)),'README.md')
+readme_path = p.join(p.dirname(p.abspath(__file__)), 'README.md')
 
 with open(readme_path, "r") as fh:
     long_description = fh.read()
@@ -27,6 +27,6 @@ setuptools.setup(
     keywords='astronomy infrared ccd reduction photometry',
     python_requires='>=3.6',
     install_requires=['astropy>=3', 'numpy>1.14', 'ccdproc>=1.3.0', 'pytest', 'tox', 'sphinx'],
-    entry_points = {'console_scripts': ['ir-reduce-cli=ir_reduce.cli:cli_main']},
+    entry_points={'console_scripts': ['ir-reduce-cli=ir_reduce.cli:cli_main']},
 
 )

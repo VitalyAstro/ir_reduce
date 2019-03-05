@@ -159,21 +159,21 @@ parser.add_argument('--version', action='version', version=VERSION)
 parser.set_defaults(func=do_nothing)
 
 
-def add_astromatic_params(parser):
+def add_astromatic_params(_parser):
     astromatic_cfg = ir_reduce.run_sextractor_scamp.Config.default()
-    parser.add_argument('--sextractor-config', '-sexc', nargs=1, type=str, default=[astromatic_cfg.sextractor_config],
-                        help='override inbuilt source extractor config file')
-    parser.add_argument('--sextractor-params', '-sexp', nargs=1, type=str, default=[astromatic_cfg.sextractor_param],
-                        help='override inbuilt source extractor parameter file')
-    parser.add_argument('--scamp-config', '-sconf', nargs=1, type=str, default=[astromatic_cfg.scamp_config],
-                        help='override inbuilt scamp config file')
-    parser.add_argument('--wdir', '-wd', nargs=1, default=[astromatic_cfg.working_dir],
-                        help='working directory for scamp/sextractor if you want to keep intermediate files')
-    parser.add_argument('--scamp-overrides', '-sco', nargs='+', default=astromatic_cfg.scamp_overrides, type=str,
-                        help='override configuration values for scamp as "KEY0=VAL0 KEY1=VAL1"')
-    parser.add_argument('--sextractor-overrides', '-sexo', nargs='+',
-                        default=astromatic_cfg.sextractor_overrides, type=str,
-                        help='override configuration values for source extractor as "KEY0=VAL0 KEY1=VAL1"')
+    _parser.add_argument('--sextractor-config', '-sexc', nargs=1, type=str, default=[astromatic_cfg.sextractor_config],
+                         help='override inbuilt source extractor config file')
+    _parser.add_argument('--sextractor-params', '-sexp', nargs=1, type=str, default=[astromatic_cfg.sextractor_param],
+                         help='override inbuilt source extractor parameter file')
+    _parser.add_argument('--scamp-config', '-sconf', nargs=1, type=str, default=[astromatic_cfg.scamp_config],
+                         help='override inbuilt scamp config file')
+    _parser.add_argument('--wdir', '-wd', nargs=1, default=[astromatic_cfg.working_dir],
+                         help='working directory for scamp/sextractor if you want to keep intermediate files')
+    _parser.add_argument('--scamp-overrides', '-sco', nargs='+', default=astromatic_cfg.scamp_overrides, type=str,
+                         help='override configuration values for scamp as "KEY0=VAL0 KEY1=VAL1"')
+    _parser.add_argument('--sextractor-overrides', '-sexo', nargs='+',
+                         default=astromatic_cfg.sextractor_overrides, type=str,
+                         help='override configuration values for source extractor as "KEY0=VAL0 KEY1=VAL1"')
 
 
 sub_parsers = parser.add_subparsers(title='subcommands', description='', help='sub commands')
@@ -202,8 +202,8 @@ sub_parser.add_argument('-o', '--output', nargs='?', type=str, default=output_de
 add_astromatic_params(sub_parser)
 sub_parser.set_defaults(func=do_discover)
 
-sub_parser = sub_parsers.add_parser('astroref', aliases=['ref'],
-                                    help='only perform astrorefferencing with sextractor/scamp on already reduced image')
+sub_parser = sub_parsers.add_parser(
+    'astroref', aliases=['ref'], help='only perform astrorefferencing with sextractor/scamp on already reduced image')
 sub_parser.add_argument('-i', '--images', metavar='images', nargs='+', type=str,
                         help='image(s) to astroreff. Can use @textfile')
 sub_parser.add_argument('-o', '--output', nargs='+', type=str, default=[output_default],
@@ -220,7 +220,8 @@ sub_parser.add_argument('refcat')
 sub_parser.set_defaults(func=do_transient_detection)
 
 
-# sub_parser = sub_parsers.add_parser('transient', aliases=['t'], help='perform some transient detection by comparing reduced image to reference catalogue')
+# sub_parser = sub_parsers.add_parser('transient', aliases=['t'],
+# help='perform some transient detection by comparing reduced image to reference catalogue')
 
 
 def cli_main():

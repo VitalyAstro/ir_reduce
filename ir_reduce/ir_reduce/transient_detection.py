@@ -18,7 +18,9 @@ def transient_detection(sextractor_output: str, refcat: str, reffed_image: CCDDa
     gaia_px = wcs.all_world2pix(np.array(gaia['X_WORLD', 'Y_WORLD'].to_pandas()), 1)
     gaia['X_IMAGE'] = gaia_px[:, 0]
     gaia['Y_IMAGE'] = gaia_px[:, 1]
-    sex_world = wcs.wcs_pix2world(np.array(sex['XWIN_IMAGE', 'YWIN_IMAGE'].to_pandas()), 1)
+
+    # noinspection PyUnusedLocal
+    sex_world = wcs.wcs_pix2world(np.array(sex['XWIN_IMAGE', 'YWIN_IMAGE'].to_pandas()), 1)  # noqa
 
     # Do calculations in image coordinates so we can use error to estimate same-ness of detections
 
@@ -36,7 +38,7 @@ def transient_detection(sextractor_output: str, refcat: str, reffed_image: CCDDa
         # how far out of the sextractor reported measurement error for the centroid do we want to search
         scale = 100
         candidate_idx = (xcol > x - xerr * scale) * (xcol < x + xerr * scale) * (ycol > y - yerr * scale) * (
-                    ycol < y + yerr * scale)
+            ycol < y + yerr * scale)
         n_candidates = sum(candidate_idx)
 
         if n_candidates == 1:
@@ -50,13 +52,13 @@ def transient_detection(sextractor_output: str, refcat: str, reffed_image: CCDDa
         else:
             ambig.append((row, gaia[candidate_idx]))
 
-    print('N ClassStar>',min_starclassifier, ':', len(sex[sex['CLASS_STAR'] > 0.8]))
+    print('N ClassStar>', min_starclassifier, ':', len(sex[sex['CLASS_STAR'] > 0.8]))
     print('distinct: ', len(distinct))
     print('notfound: ', len(notfound))
     print('ambiguous: ', len(ambig))
 
-    plt.scatter(gaia_px[:, 0], gaia_px[:, 1], marker='o', color='g',label='reference stars')
-    plt.scatter(sex['XWIN_IMAGE'],sex['YWIN_IMAGE'], color='r', marker='x', label='sextractor')
+    plt.scatter(gaia_px[:, 0], gaia_px[:, 1], marker='o', color='g', label='reference stars')
+    plt.scatter(sex['XWIN_IMAGE'], sex['YWIN_IMAGE'], color='r', marker='x', label='sextractor')
     plt.legend()
 
     # plt.figure()
@@ -67,9 +69,6 @@ def transient_detection(sextractor_output: str, refcat: str, reffed_image: CCDDa
 
     # plt.scatter(gaia['X_WORLD'], gaia['Y_WORLD'])
     # plt.scatter(sex_world[:, 0], sex_world[:, 1])
-
-
-
 
     plt.show()
     return sex, gaia

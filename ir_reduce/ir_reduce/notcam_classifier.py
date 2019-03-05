@@ -19,7 +19,7 @@ def image_category(header: Header) -> Category:
         return Category.UNKNOWN
 
     if cat == 'SCIENCE':
-        return Category.SCIENCE
+        return Category.IMAGING
     elif img_type == 'BAD_PIXEL':
         return Category.BAD
     elif cat == 'CALIB' and 'FLAT' in img_type:

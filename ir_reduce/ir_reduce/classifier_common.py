@@ -2,7 +2,8 @@ from enum import Enum, auto
 
 
 class Category(Enum):
-    SCIENCE = auto()
+    IMAGING = auto()
+    SPECTROSCOPY = auto()
     BAD = auto()
     FLAT = auto()
     BIAS = auto()

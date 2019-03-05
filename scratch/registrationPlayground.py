@@ -11,7 +11,7 @@ import image_registration
 import ir_reduce
 
 processed = ir_reduce.standard_process()
-data = processed['J']
+data = processed
 
 i8 = data[8].copy()
 i0 = data[0].copy()

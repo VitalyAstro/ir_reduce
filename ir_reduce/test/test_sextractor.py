@@ -4,7 +4,8 @@ import tempfile
 from unittest import mock
 import os
 import shutil
-from ir_reduce import run_astroref, parse_key_val_config, is_config_valid, Config  # todo: astroref_file, astroreff_files
+from ir_reduce import run_astroref, parse_key_val_config, is_config_valid, Config
+# todo: astroref_file, astroreff_files
 
 
 class ConfigForTest:
@@ -46,6 +47,8 @@ def recorder(*args, **kwargs):
 @pytest.mark.incremental
 class TestRun:
 
+    # noinspection PyPep8
+    # flake8: noqa
     def test_parse_key_val_config(self, capsys):
         teststring = dedent("""         
           AHEADER_SUFFIX         .ahead          # Filename extension for additional

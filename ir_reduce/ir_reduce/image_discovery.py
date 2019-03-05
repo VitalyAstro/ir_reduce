@@ -57,13 +57,6 @@ def discover_header(directory: str) -> ImageGroup:
     # d.writeto('bad_cold5_with_header_change.fits')
     bad = [fname for fname, cat in zip(fits_filenames, category) if cat == Category.BAD]
     flat = [fname for fname, cat in zip(fits_filenames, category) if cat == Category.FLAT]
-    images = [fname for fname, cat in zip(fits_filenames, category) if cat == Category.SCIENCE]
+    images = [fname for fname, cat in zip(fits_filenames, category) if cat == Category.IMAGING]
 
     return ImageGroup(bad=bad, flat=flat, images=images)
-
-
-
-
-
-
-

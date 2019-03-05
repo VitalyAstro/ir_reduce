@@ -1,17 +1,23 @@
-import ir_reduce
-import cProfile, pstats
-from pstats import SortKey
-from pyprof2calltree import convert
+import cProfile
+import pstats
 import sys
+from pstats import SortKey
+
+import ir_reduce
+from pyprof2calltree import convert
 
 multi = 'multi' in sys.argv
 single = 'single' in sys.argv
 both = not multi and not single
 
+# define variables to silence warning
+pr = prsingle = None
+
 if multi or both:
     pr = cProfile.Profile()
     pr.enable()
-    ir_reduce.do_everything(['../testdata/bad_cold5.fits', '../testdata/bad_hot2.fits', '../testdata/bad_zero_sci.fits'],
+    ir_reduce.do_everything(
+        ['../testdata/bad_cold5.fits', '../testdata/bad_hot2.fits', '../testdata/bad_zero_sci.fits'],
         ['../testdata/FlatJ.fits'],
         ["../testdata/NCAc070865.fits", "../testdata/NCAc070866.fits", "../testdata/NCAc070867.fits",
          "../testdata/NCAc070868.fits",
@@ -25,11 +31,13 @@ if multi or both:
          "../testdata/NCAc070876.fits",
          "../testdata/NCAc070877.fits",
          "../testdata/NCAc070878.fits", "../testdata/NCAc070879.fits", "../testdata/NCAc070880.fits",
-         "../testdata/NCAc070881.fits", "../testdata/NCAc070882.fits", "../testdata/NCAc070883.fits", "../testdata/NCAc070884.fits",
-         "../testdata/NCAc070885.fits", "../testdata/NCAc070886.fits", "../testdata/NCAc070887.fits", "../testdata/NCAc070888.fits",
+         "../testdata/NCAc070881.fits", "../testdata/NCAc070882.fits", "../testdata/NCAc070883.fits",
+         "../testdata/NCAc070884.fits",
+         "../testdata/NCAc070885.fits", "../testdata/NCAc070886.fits", "../testdata/NCAc070887.fits",
+         "../testdata/NCAc070888.fits",
          "../testdata/NCAc070889.fits", "../testdata/NCAc070890.fits",
          "../testdata/NCAc070891.fits"],
-                            output="")
+        output="")
 
     pr.disable()
     pr.dump_stats('multicore.stats')
@@ -42,7 +50,8 @@ if single or both:
     ir_reduce.Pool = ir_reduce.PoolDummy
     ir_reduce.do_everything.__globals__['Pool'] = ir_reduce.PoolDummy
 
-    ir_reduce.do_everything(['../testdata/bad_cold5.fits', '../testdata/bad_hot2.fits', '../testdata/bad_zero_sci.fits'],
+    ir_reduce.do_everything(
+        ['../testdata/bad_cold5.fits', '../testdata/bad_hot2.fits', '../testdata/bad_zero_sci.fits'],
         ['../testdata/FlatJ.fits'],
         ["../testdata/NCAc070865.fits", "../testdata/NCAc070866.fits", "../testdata/NCAc070867.fits",
          "../testdata/NCAc070868.fits",
@@ -56,11 +65,13 @@ if single or both:
          "../testdata/NCAc070876.fits",
          "../testdata/NCAc070877.fits",
          "../testdata/NCAc070878.fits", "../testdata/NCAc070879.fits", "../testdata/NCAc070880.fits",
-         "../testdata/NCAc070881.fits", "../testdata/NCAc070882.fits", "../testdata/NCAc070883.fits", "../testdata/NCAc070884.fits",
-         "../testdata/NCAc070885.fits", "../testdata/NCAc070886.fits", "../testdata/NCAc070887.fits", "../testdata/NCAc070888.fits",
+         "../testdata/NCAc070881.fits", "../testdata/NCAc070882.fits", "../testdata/NCAc070883.fits",
+         "../testdata/NCAc070884.fits",
+         "../testdata/NCAc070885.fits", "../testdata/NCAc070886.fits", "../testdata/NCAc070887.fits",
+         "../testdata/NCAc070888.fits",
          "../testdata/NCAc070889.fits", "../testdata/NCAc070890.fits",
          "../testdata/NCAc070891.fits"],
-                            output="")
+        output="")
     prsingle.disable()
     prsingle.dump_stats('singlecore.stats')
     convert(prsingle.getstats(), 'singlecore.kgrind')

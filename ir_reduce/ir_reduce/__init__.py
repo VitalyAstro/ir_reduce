@@ -1,3 +1,4 @@
+# flake8: noqa
 from .main import *
 from .run_sextractor_scamp import *
 from .transient_detection import *

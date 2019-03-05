@@ -121,8 +121,8 @@ def is_config_valid(config: Config) -> bool:
     #    scamp_cfg = parse_key_val_config(f.read())
 
     valid = config.sextractor_outfile == sex_cfg['CATALOG_NAME'] and \
-            sex_cfg['CATALOG_TYPE'] == 'FITS_LDAC' and \
-            sex_cfg['HEADER_SUFFIX'] == '.head'
+        sex_cfg['CATALOG_TYPE'] == 'FITS_LDAC' and \
+        sex_cfg['HEADER_SUFFIX'] == '.head'
 
     return valid
 
@@ -185,6 +185,7 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
         print(sex_process.stdout)
         print(sex_process.stderr, file=sys.stdout)
 
+    # flake8: noqa W504
     scamp_process = sp.run([config.scamp_cmd, config.sextractor_outfile, '-c', config.scamp_config]
                            + split_overriders(config.scamp_overrides),
                            cwd=working_dir, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True, timeout=30)
@@ -203,7 +204,7 @@ def run_astroref(input_data: Union[str, CCDData], config: Config = Config.defaul
         print(scamp_process.stdout)
         print(scamp_process.stderr, file=sys.stdout)
 
-    scamp_data, sextractor_data = None, None
+    # scamp_data, sextractor_data = None, None
     # SExtractor will write to CATALOG_NAME (sextractor config)
     # by HEADER_SUFFIX in its config scamp will write its output to sextractor_outfile but fits->head
     with open(os.path.join(working_dir, config.sextractor_outfile.replace('.fits', '.head'))) as scamp_outfile:

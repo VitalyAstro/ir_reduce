@@ -3,7 +3,7 @@ import logging
 
 from astropy.nddata import CCDData
 from astropy.io.fits import Header
-from .classifier_common import *
+from .classifier_common import Instrument, Category, Band
 from . import notcam_classifier
 from . import alfosc_classifier
 

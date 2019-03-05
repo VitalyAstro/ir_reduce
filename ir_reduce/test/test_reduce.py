@@ -1,3 +1,4 @@
+# flake8: noqa F811
 import glob
 import os
 import tempfile
@@ -10,7 +11,8 @@ from ir_reduce import standard_process, skyscale, interpolate, read_and_sort, do
 from ir_reduce.classifier_common import Band
 from numpy import zeros, ones, float64, int64, s_
 
-from .datadir import datadir
+# noinspection PyUnresolvedReferences
+from .datadir import datadir # noqa
 
 # Setup
 image_size = (10, 10)
@@ -73,12 +75,11 @@ def test_interpolate():
 @pytest.mark.filterwarnings('ignore::astropy.wcs.FITSFixedWarning')
 @pytest.mark.parametrize('pool', [PoolDummy(), Pool(2)])
 def test_read_and_sort(pool, datadir):
-    testdir = datadir
-    assert os.path.isdir(testdir), testdir + " does not exist"
+    assert os.path.isdir(datadir), datadir + " does not exist"
 
-    bads = glob.glob(testdir + "/bad*.fits")
-    flats = glob.glob(testdir + "/Flat*.fits")
-    imgs = glob.glob(testdir + "/NCA*.fits")
+    bads = glob.glob(datadir + "/bad*.fits")
+    flats = glob.glob(datadir + "/Flat*.fits")
+    imgs = glob.glob(datadir + "/NCA*.fits")
     read = read_and_sort(bads, flats, imgs, pool)
     assert read[Band.J].bad
     assert read[Band.J].flat
@@ -90,12 +91,11 @@ def test_read_and_sort(pool, datadir):
 @pytest.mark.integration
 @pytest.mark.filterwarnings('ignore::astropy.wcs.FITSFixedWarning')
 def test_do_everything_ir(datadir):
-    testdir = datadir
-    assert os.path.isdir(testdir), testdir + " does not exist"
+    assert os.path.isdir(datadir), datadir + " does not exist"
 
-    bads = glob.glob(testdir + "/bad*.fits")
-    flats = glob.glob(testdir + "/Flat*.fits")
-    imgs = glob.glob(testdir + "/NCA*.fits")
+    bads = glob.glob(datadir + "/bad*.fits")
+    flats = glob.glob(datadir + "/Flat*.fits")
+    imgs = glob.glob(datadir + "/NCA*.fits")
 
     with tempfile.TemporaryDirectory() as tmpdir:
         image, scamp, sextractor = do_everything(bads, flats, imgs, os.path.join(tmpdir, "testout_standard.fits"))
@@ -108,8 +108,7 @@ def test_do_everything_ir(datadir):
 @pytest.mark.integration
 @pytest.mark.filterwarnings('ignore::astropy.wcs.FITSFixedWarning')
 def test_do_everything_optical(datadir):
-    testdir = datadir
-    assert os.path.isdir(testdir), testdir + " does not exist"
+    assert os.path.isdir(datadir), datadir + " does not exist"
 
     imgs = [os.path.join(datadir, "TestOptData", img) for img in
             ["ALAd210081.fits", "ALAd210082.fits", "ALAd210080.fits", "ALAd210079.fits"]]

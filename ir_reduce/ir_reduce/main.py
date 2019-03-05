@@ -9,7 +9,7 @@ from multiprocessing import Pool, \
 from typing import List, Tuple, Iterable, Union, Dict, Sequence
 
 import astropy
-import astropy.io.fits as fits
+import astropy.wcs
 import ccdproc
 import numpy as np
 from astropy import units as u
@@ -19,7 +19,8 @@ from astropy.stats import SigmaClip
 from numpy import s_  # numpy helper to create slices by indexing this
 
 from .image_discovery import ImageGroup
-from .image_type_classifier import Category, image_category, Band, band, determine_instrument
+# noinspection PyUnresolvedReferences
+from .image_type_classifier import Category, image_category, Band, band, determine_instrument  # noqa
 from .run_sextractor_scamp import run_astroref, Config
 
 n_cpu = cpu_count()  # creating a global pool here does not work as the workers import this exact file,
@@ -37,9 +38,9 @@ class PoolDummy:
 
     def map_async(self, fun, iterable):
         class get_returner:
-            def __init__(self, fun, iterable):
-                self.fun = fun
-                self.iterable = iterable
+            def __init__(self, _fun, _iterable):
+                self.fun = _fun
+                self.iterable = _iterable
 
             def get(self):
                 return list(map(self.fun, self.iterable))
@@ -101,7 +102,7 @@ def read_and_sort(bads: Iterable[str], flats: Iterable[str], exposures: Iterable
 
         # only science images allowed. TODO this assumes that classification works but can screw over manual mode
         # Maybe adding a check for manual would solve it, but it's not that critical
-        # assert all((image_category(image) == Category.SCIENCE for image in images_with_filter))
+        # assert all((image_category(image) == Category.IMAGING for image in images_with_filter))
 
         flats_with_filter = [image for image in flat_datas if band(image) == band_id]
 
@@ -246,9 +247,9 @@ def fix_pix(img: CCDData) -> CCDData:
     mask = img.mask
     import scipy.ndimage as ndimage
     """
-    taken from https://www.iaa.csic.es/~jmiguel/PANIC/PAPI/html/_modules/reduce/calBPM.html#fixPix 
+    taken from https://www.iaa.csic.es/~jmiguel/PANIC/PAPI/html/_modules/reduce/calBPM.html#fixPix
     (GPLv3)
-    
+
     Applies a bad-pixel mask to the input image (im), creating an image with
     masked values replaced with a bi-linear interpolation from nearby pixels.
     Probably only good for isolated badpixels.
@@ -295,7 +296,7 @@ def fix_pix(img: CCDData) -> CCDData:
         subim = im[y0: y1, x0: x1]
         submask = mask[y0: y1, x0: x1]
         # noinspection PyPep8
-        subgood = (submask == False)
+        subgood = (submask == False)  # noqa
 
         cleaned[i * mask] = subim[subgood].mean()
 

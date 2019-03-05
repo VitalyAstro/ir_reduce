@@ -21,10 +21,12 @@ def image_category(header: Header) -> Category:
         logging.warning('could not determine image category')
         return Category.UNKNOWN
 
-    obs_type = header['OBS_TYPE'] if 'OBS_TYPE' in header else ''
+    obs_mode = header['OBS_MODE'] if 'OBS_MODE' in header else ''
 
-    if cat.strip() == '' and obs_type == 'IMAGING':
-        return Category.SCIENCE
+    if cat.strip() == '' and obs_mode == 'IMAGING':
+        return Category.IMAGING
+    elif cat.strip() == '' and obs_mode == 'SPECTROSCOPY':
+        return Category.SPECTROSCOPY
     elif img_type == 'BAD_PIXEL':
         return Category.BAD
     elif cat == 'CALIB' and 'FLAT' in img_type:
@@ -49,5 +51,3 @@ def band(header: Header) -> Band:
 
     filter_name = [name for name in (f_filter, fa_filter, grism) if 'Open' not in name][0]
     return Band.lookup(filter_name)
-
-

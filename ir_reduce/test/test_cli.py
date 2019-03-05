@@ -1,9 +1,10 @@
+import os
+import tempfile
+from unittest import mock
+
 import pytest
 from ir_reduce import cli_main, cli
-from unittest import mock
-import argparse
-import tempfile
-import os
+
 
 def test_basic():
     # if --runintegration is passed to pytest, it polutes sys.argv
@@ -15,15 +16,19 @@ def test_basic():
     finally:
         sys.argv = saved
 
+
 def test_parsing():
     parser = cli.parser
-    parser.parse_args(['m', '-o', 'out.fits', '-b', '../testdata/bad_*', '-f', '../testdata/FlatJ.fits', '-i', '../testdata/NCAc0708*fits'])
-    parser.parse_args(['m', '--output', 'out.fits', '-b', '../testdata/bad_*', '-f', '../testdata/FlatJ.fits', '-i', '../testdata/NCAc0708*fits'])
+    parser.parse_args(['m', '-o', 'out.fits', '-b', '../testdata/bad_*', '-f', '../testdata/FlatJ.fits', '-i',
+                       '../testdata/NCAc0708*fits'])
+    parser.parse_args(['m', '--output', 'out.fits', '-b', '../testdata/bad_*', '-f', '../testdata/FlatJ.fits', '-i',
+                       '../testdata/NCAc0708*fits'])
+
 
 def test_roundtrip():
     parser = cli.parser
     # manual
-    args = parser.parse_args(['m', '-o','out.fits', '-b', 'bad1', '-f', 'flat1', '-i', 'im1'])
+    args = parser.parse_args(['m', '-o', 'out.fits', '-b', 'bad1', '-f', 'flat1', '-i', 'im1'])
     assert args.func == cli.do_manual
     mock_reduce = mock.Mock()
     with mock.patch('ir_reduce.cli.astroref_and_or_reduce', mock_reduce):
@@ -35,19 +40,23 @@ def test_roundtrip():
     args = parser.parse_args(['d', '-o', 'out.fits', 'mydir'])
     assert args.func == cli.do_discover
     mock_reduce, mock_discover = mock.Mock(), mock.Mock()
-    with mock.patch('ir_reduce.cli.astroref_and_or_reduce', mock_reduce), mock.patch('ir_reduce.image_discovery.discover_filename', mock_discover):
+    with mock.patch('ir_reduce.cli.astroref_and_or_reduce', mock_reduce), mock.patch(
+            'ir_reduce.image_discovery.discover_filename', mock_discover):
         mock_discover.return_value = ([1], [2], [3])
         args.func(args)
 
     mock_discover.assert_called()
     mock_reduce.assert_called()
 
+
 def test_invalid_args(capsys):
     parser = cli.parser
     with pytest.raises(SystemExit):
+        # noinspection PyUnusedLocal
         args = parser.parse_args(['m', '-o', 'out.fits', '-b'])
     captured = capsys.readouterr()
     assert 'manual: error: argument -b/--bad: expected at least one argument' in captured.err
+
 
 def test_at_syntax():
     parser = cli.parser
@@ -56,8 +65,8 @@ def test_at_syntax():
     with pytest.raises(ValueError):
         args.func(args)
 
-    with tempfile.TemporaryDirectory() as dir:
-        bad, flat, im = [os.path.join(dir, i) for i in ('bad', 'flat', 'im')]
+    with tempfile.TemporaryDirectory() as directory:
+        bad, flat, im = [os.path.join(directory, i) for i in ('bad', 'flat', 'im')]
         with open(bad, 'w') as f:
             f.write('bad\nbar\n')
         with open(flat, 'w') as f:
@@ -75,13 +84,13 @@ def test_at_syntax():
                                        [absp('im'), absp('baz')], mock.ANY, mock.ANY)
 
 
-
+# noinspection PyUnusedLocal
+# flake8: noqa F841
 def test_astroref_only():
     parser = cli.parser
     args = parser.parse_args(['astroref', '-o', 'in.fits', 'in2.fits', '-i', 'out.fits', 'out.fits'])
     args = parser.parse_args(['astroref', '-i', 'in.fits', 'in2.fits', '-o', 'out.fits', 'out.fits'])
     args = parser.parse_args(['astroref', '-i', 'in.fits'])
-
 
     mock_aref = mock.Mock()
     with mock.patch('ir_reduce.do_only_astroref', mock_aref):
@@ -105,6 +114,6 @@ def test_astromatic_config_overrides():
     with mock.patch('os.path.exists', lambda x: True):  # maybe wasn't smart to have parsing and validation in same func
         cfg = cli.parse_astromatic_config(args)
 
-    assert(cfg.scamp_overrides == ['A=B', 'B=B'])
-    assert(cfg.sextractor_overrides == ['A=B'])
+    assert (cfg.scamp_overrides == ['A=B', 'B=B'])
+    assert (cfg.sextractor_overrides == ['A=B'])
     pass
